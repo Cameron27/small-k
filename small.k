@@ -67,23 +67,22 @@ module SMALL
          <env> Env => Env'[I <- E] </env>
 
     // If
+    context if ( HOLE => reval(HOLE) ) _
+    rule if ( true ) C => C
+    rule if ( false ) _ => .
     context if ( HOLE => reval(HOLE) ) _ else _
-    rule if ( true ) E else _ => E
-    rule if ( false ) _ else E => E
+    rule if ( true ) C else _ => C
+    rule if ( false ) _ else C => C
 
     // While
-    rule while (E) C => if (E) { C while (E) C} else {}
+    rule while (E) C => if (E) { .Decs C while (E) C }
 
     // Block
-    rule <k> { D:Dec C:Com } => D ~> C ~> env(Env) ...</k>
+    rule <k> { D:Decs C:Coms } => D ~> C ~> env(Env) ...</k>
          <env> Env </env>                                       [structural]
-    rule <k> { D:Dec } => D ~> env(Env)  ...</k>
-         <env> Env </env>                                       [structural]
-    rule { C:Com } => C                                         [structural]
-    rule {  } => .                                              [structural]
 
-    // Chain
-    rule C1:Com C2:Com => C1 ~> C2                              [structural]
+    rule C:Com Cs:Coms => C ~> Cs                               [structural]
+    rule .Coms => .                                             [structural]
 
     // ---------------
     // |     Dec     |
@@ -108,8 +107,8 @@ module SMALL
     rule <k> func I(I1) { E } => const I = func(I1, env(Env), E) ; ...</k>
          <env> Env </env>                                       [structural]
 
-    // Chain
-    rule D1:Dec D2:Dec => D1 ~> D2                              [structural]
+    rule D:Dec Ds:Decs => D ~> Ds                               [structural]
+    rule .Decs => .                                             [structural]
 
     // ---------------
     // |    Other    |

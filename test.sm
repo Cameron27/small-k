@@ -1,4 +1,0 @@
-program {
-    var x = 0;
-    output x;
-}

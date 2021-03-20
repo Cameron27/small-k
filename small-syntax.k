@@ -44,21 +44,19 @@ module SMALL-SYNTAX
     syntax Com ::= Exp "=" Exp ";"
                  | "output" Exp ";"
                  | Exp "(" Exp ")" ";"                          [strict]
-                 | "if" "(" Exp ")" Block "else" Block
-                 | "while" "(" Exp ")" Block
+                 | "if" "(" Exp ")" Com "else" Com
+                 | "if" "(" Exp ")" Com                         [prefer]
+                 | "while" "(" Exp ")" Com
                  | Block
-                 | Com Com                                      [right]
+    syntax Coms ::= List{Com, ""}
 
     syntax Dec ::= "const" Id "=" Exp ";"
                  | "var" Id "=" Exp ";"
                  | "proc" Id "(" Id ")" Block
                  | "func" Id "(" Id ")" "{" Exp "}"
-                 | Dec Dec                                      [right]
+    syntax Decs ::= List{Dec, ""}
 
-    syntax Block ::= "{" Dec Com "}"
-                   | "{" Dec "}"
-                   | "{" Com "}"
-                   | "{" "}"
+    syntax Block ::= "{" Decs Coms "}"
 endmodule
 
 module ALTINT
