@@ -2,8 +2,6 @@ requires "small-syntax.k"
 
 module CONFIGURATION
     imports SMALL-SYNTAX
-    imports MAP
-    imports LIST
 
     configuration <T>
         <k> $PGM:Pgm </k>

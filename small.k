@@ -1,15 +1,26 @@
-requires "helper.k"
 requires "small-syntax.k"
 requires "configuration.k"
 requires "operations.k"
+requires "additional-syntax.k"
 
 module SMALL
     imports SMALL-SYNTAX
-    imports MAP
+    imports ADDITIONAL-SYNTAX
     imports LIST
-    imports HELPER
     imports CONFIGURATION
     imports OPERATIONS
+
+    // Evaluate RVal
+    rule reval(E) => #reval(E)
+        requires notBool isDv(E)                                [structural]
+    rule #reval(E) => reval(E)
+        requires isRv(E)                                        [structural]
+    rule <k> #reval(L) => reval(E) ...</k>
+         <store>... L |-> E ...</store>
+
+    // Restore Environment
+    rule <k> env(Env) => . ...</k>
+         <env> _ => Env </env>
 
     // ---------------
     // |     Pgm     |
@@ -59,8 +70,14 @@ module SMALL
 
     // Output
     context output (HOLE => reval(HOLE)) ;
+    rule <k> output E:Float ; => . ...</k>
+         <out> List => List ListItem(printFloat(E)) ListItem("\n") </out>
+    rule <k> output true ; => . ...</k>
+         <out> List => List ListItem("true") ListItem("\n") </out>
+    rule <k> output false ; => . ...</k>
+         <out> List => List ListItem("false") ListItem("\n") </out>
     rule <k> output E:Rv ; => . ...</k>
-         <out> List => List ListItem(E) ListItem("\n") </out>
+         <out> List => List ListItem(E) ListItem("\n") </out>   [owise]
 
     // Procedure
     rule <k> proc(I, env(Env'), C) ( E:Dv ) ; => C ~> env(Env) ...</k>
