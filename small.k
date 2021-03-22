@@ -33,11 +33,11 @@ module SMALL
     // ---------------
 
     // Read
-    syntax Read ::= read(String)
-    rule <k> read => read("") ...</k>                           [structural]
-    rule read(S) => replaceAll(replaceAll(S, "\n", ""), "\r", "")
+    syntax Read ::= #read(String)
+    rule <k> read => #read("") ...</k>                          [structural]
+    rule #read(S) => replaceAll(replaceAll(S, "\n", ""), "\r", "")
         requires countAllOccurrences(S, "\n") >Int 0
-    rule <k> read(S1) => read(S1 +String S2) ...</k>
+    rule <k> #read(S1) => #read(S1 +String S2) ...</k>
          <in> ListItem(S2:String) => .List ...</in>             [owise]
 
     // Identifier

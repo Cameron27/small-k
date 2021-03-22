@@ -8,15 +8,16 @@ module SMALL-SYNTAX
 
     syntax Pgm ::= "program" Block
 
-    syntax Exp ::= left:
-                   Exp "(" Exp ")"                              [strict]
-                 > Int
+    syntax Exp ::= Int
                  | AltInt
                  | Double
                  | Bool
                  | String
                  | Id
                  | "read"
+                 | "(" Exp ")"                                  [bracket]
+                 > left:
+                   Exp "(" Exp ")"                              [strict]
                  > left:
                    Exp "*" Exp
                  | Exp "/" Exp
@@ -40,7 +41,6 @@ module SMALL-SYNTAX
                    Exp "|" Exp
                  > right:
                    Exp "?" Exp ":" Exp
-                 > "(" Exp ")"                                  [bracket]
 
 
     syntax Com ::= Exp "=" Exp ";"
