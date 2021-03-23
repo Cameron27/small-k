@@ -94,6 +94,35 @@ module SMALL
     // While
     rule while (E) C => if (E) { .Decs C while (E) C }
 
+    // Trap
+    syntax Trap ::= trap(Env, Int)
+    syntax Escs ::= escs(Escs, Int)
+    rule <k> trap { Ds Cs Escs } => escs(reverse(Escs), !N) ~> {Ds Cs} ~> trap(env(Env), !N) ...</k>
+         <env> Env </env>                                       [structural]
+    // add escape labels to the environment
+    rule <k> escs((I:Id : Cs:Coms Escs:Escs => Escs), N) ...</k>
+         <env> Env => Env[I <- cc(Cs, N)] </env>
+    rule escs(.Escs, _) => .                                    [structural]
+    // deal with either an escapeto or the whole trap body being run
+    rule escapeto(cc(C, N)) ~> trap(Env, N) => Env ~> C         [structural]
+    rule trap(Env, _) => Env                                    [structural]
+    // reverse function for list of escapes so that first occurances will override later ones
+    syntax Escs ::= reverse(Escs)                               [function]
+                  | reverse(Escs, Escs)                         [function]
+    rule reverse(X) => reverse(X, .Escs)
+    rule reverse(X Xs, Ys) => reverse(Xs, X Ys)
+    rule reverse(.Escs, Ys) => Ys
+
+    // Escape
+    syntax EscapeTo ::= escapeto(Cc)
+    rule <k> escapeto I ; => escapeto(C) ...</k>
+         <env>... I |-> C:Cc ...</env>
+    // once an escape is encountered all following computations are deleted until the corresponding trap is reached
+    rule <k> escapeto(_) ~> (K:KItem => .) ...</k>
+        requires notBool isTrap(K)                              [structural]
+    rule <k> escapeto(cc(_, N)) ~> (trap(_, M) => .) ...</k>
+         requires N =/=Int M                                    [structural]
+
     // Block
     rule <k> { D:Decs C:Coms } => D ~> C ~> env(Env) ...</k>
          <env> Env </env>                                       [structural]

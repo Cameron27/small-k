@@ -49,8 +49,12 @@ module SMALL-SYNTAX
                  | "if" "(" Exp ")" Com "else" Com
                  | "if" "(" Exp ")" Com                         [prefer]
                  | "while" "(" Exp ")" Com
+                 | "trap" "{" Decs Coms Escs "}"
+                 | "escapeto" Id ";"
                  | Block
     syntax Coms ::= List{Com, ""}
+    syntax Esc ::= Id ":" Coms
+    syntax Escs ::= List{Esc, ""}
 
     syntax Dec ::= "const" Id "=" Exp ";"
                  | "var" Id "=" Exp ";"

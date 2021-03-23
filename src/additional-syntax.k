@@ -16,9 +16,11 @@ module ADDITIONAL-SYNTAX
 
     syntax Func ::= func(Id, Env, Exp)
 
+    syntax Cc ::= cc(Coms, Int)
+
     syntax Rv ::= Int | Float | Bool | String
 
-    syntax Dv ::= Loc | Rv | Proc | Func
+    syntax Dv ::= Loc | Rv | Proc | Func | Cc
 
     syntax Exp ::= Dv
 
