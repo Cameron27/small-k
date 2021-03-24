@@ -22,6 +22,13 @@ module SMALL
     rule <k> env(Env) => . ...</k>
          <env> _ => Env </env>
 
+    // Pop Stacks
+    rule <k> E:Dv ~> popE() => Env ~> E ~> Rest </k>
+         <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
+
+    rule <k> pop() => Env ~> Rest </k>
+         <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
+
     // ---------------
     // |     Pgm     |
     // ---------------
@@ -57,20 +64,19 @@ module SMALL
     rule false ? _ : E => E
 
     // Jumpout
-    syntax Jump ::= jump(Id)
+    syntax Jump ::= jump(Int)
     syntax Dv ::= Jump
-    // denotes the environment to be restored to and rest of the program for when the a jump is called
-    syntax Jumpout ::= jumpout(Env, K)
-    // used to identify end of jumpout was reached without a the jump being called and identify jumpouts in the environment
-    syntax JumpoutId ::= jumpoutId(Id)
-    rule <k> jumpout I in E ~> Rest => E ~> jumpoutId(I) </k> // calculate expression ending with a jumpoutId
-         <env> Env => Env[I <- jump(I)][jumpoutId(I) <- jumpout(env(Env), Rest)] </env>
-    // if the jump was never called restore the environment and pass the value to the rest of the program
-    rule <k> E:Dv ~> jumpoutId(I) => Env ~> E ~> Rest </k>
-         <env>... jumpoutId(I) |-> jumpout(Env, Rest) => .Map ...</env> [structural]
-    // a jump call restores the environment and passes the value to the rest of the program
-    rule <k> jump(I) ( E:Dv ) ~> _ => Env ~> E ~> Rest </k>
-         <env>... jumpoutId(I) |-> jumpout(Env, Rest) => .Map ...</env>
+    // enter jumpout
+    rule <k> jumpout I in E ~> Rest => E ~> popE() </k>
+         <env> Env => Env[I <- jump(!N)] </env>
+         <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
+    // resolve incounted call of jump function
+    rule <k> jump(N) ( E:Dv ) ~> _ => Env ~> E ~> Rest </k>
+         <stack> ListItem(frame(N, Env, Rest)) => .List ...</stack>
+    // clear stack until correct stack frame is reached
+    rule <k> jump(N) ( _:Dv ) ...</k>
+         <stack> ListItem(frame(M, _, _)) => .List ...</stack>
+            requires N =/=Int M                                 [structural]
 
     // Operations in operations.k
 
@@ -111,39 +117,36 @@ module SMALL
     rule while (E) C => if (E) { .Decs C while (E) C }
 
     // Trap
-    // denotes the environment to be restored to and rest of the program for when the trap is over or a escapeto is reached
-    syntax Trap ::= trap(Env, K)
-    // used to identify end of trap was reached without a escapeto and identify traps in the environment
-    syntax TrapId ::= trapId(Int)
     syntax Escs ::= escs(Escs, Int)
-    // setup escs to be added to env, run commands ending with a trapId
-    rule <k> trap { Ds Cs Escs } ~> Rest => escs(reverse(Escs), !N) ~> {Ds Cs} ~> trapId(!N) </k>
-         <env> Env => Env[trapId(!N) <- trap(env(Env), Rest)] </env>
-    // add escape labels to the environment
+    // enter trap
+    rule <k> trap { Ds Cs Escs } ~> Rest => escs(reverseEscs(Escs), !N) ~> { Ds Cs } ~> pop() </k>
+         <env> Env </env>
+         <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
+    // add lables to environment
+    syntax TrapLabel ::= trapLabel(Coms, Int)
     rule <k> escs((I:Id : Cs:Coms Escs:Escs => Escs), N) ...</k>
-         <env> Env => Env[I <- cc(Cs, N)] </env>
+         <env> Env => Env[I <- trapLabel(Cs, N)] </env>
     rule escs(.Escs, _) => .                                    [structural]
-    // an escapeto restores the environment, run the escape commands then run the rest of the program
-    rule <k> escapeto(cc(C, N)) ~> _ => Env ~> C ~> K </k>
-         <env>... trapId(N) |-> trap(Env, K) ...</env>          [structural]
-    // if no escapeto was hit then restore the environment and run the rest of the program
-    rule <k> trapId(N) => Env ~> K </k>
-         <env>... trapId(N) |-> trap(Env, K) ...</env>          [structural]
     // reverse function for list of escapes so that first occurances will override later ones
-    syntax Escs ::= reverse(Escs)                               [function]
-                  | reverse(Escs, Escs)                         [function]
-    rule reverse(X) => reverse(X, .Escs)
-    rule reverse(X Xs, Ys) => reverse(Xs, X Ys)
-    rule reverse(.Escs, Ys) => Ys
-
-    // Escape
-    syntax EscapeTo ::= escapeto(Cc)
-    rule <k> escapeto I ; => escapeto(C) ...</k>
-         <env>... I |-> C:Cc ...</env> //TODO: Refactor this into the other part
+    syntax Escs ::= reverseEscs(Escs)                           [function]
+                  | reverseEscs(Escs, Escs)                     [function]
+    rule reverseEscs(X) => reverseEscs(X, .Escs)
+    rule reverseEscs(X Xs, Ys) => reverseEscs(Xs, X Ys)
+    rule reverseEscs(.Escs, Ys) => Ys
+    // resolve an encountered escapeto
+    rule <k> escapeto I ; ~> _ => Env ~> Cs ~> Rest </k>
+         <env>... I |-> trapLabel(Cs, N) ...</env>
+         <stack> ListItem(frame(N, Env, Rest)) => .List ...</stack>
+    // clear stack until correct stack frame is reached
+    rule <k> escapeto I ;  ...</k>
+         <env>... I |-> trapLabel(_, N) ...</env>
+         <stack> ListItem(frame(M, _, _)) => .List ...</stack>
+            requires N =/=Int M                                 [structural]
 
     // Block
-    rule <k> { D:Decs C:Coms } => D ~> C ~> env(Env) ...</k>
-         <env> Env </env>                                       [structural]
+    rule <k> { D:Decs C:Coms } ~> Rest => D ~> C ~> pop() </k>
+         <env> Env </env>
+         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>   [structural]
 
     rule C:Com Cs:Coms => C ~> Cs                               [structural]
     rule .Coms => .                                             [structural]

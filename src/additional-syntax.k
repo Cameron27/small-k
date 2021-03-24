@@ -16,11 +16,9 @@ module ADDITIONAL-SYNTAX
 
     syntax Func ::= func(Id, Env, Exp)
 
-    syntax Cc ::= cc(Coms, Int)
-
     syntax Rv ::= Int | Float | Bool | String
 
-    syntax Dv ::= Loc | Rv | Proc | Func | Cc
+    syntax Dv ::= Loc | Rv | Proc | Func
 
     syntax Exp ::= Dv
 
@@ -28,4 +26,9 @@ module ADDITIONAL-SYNTAX
 
     syntax Exp ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
+
+    syntax Pop ::= pop()
+                 | popE()
+
+    syntax Frame ::= frame(Int, Env, K)
 endmodule
