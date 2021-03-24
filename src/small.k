@@ -56,6 +56,22 @@ module SMALL
     rule true ? E : _ => E
     rule false ? _ : E => E
 
+    // Jumpout
+    syntax Jump ::= jump(Id)
+    syntax Dv ::= Jump
+    // denotes the environment to be restored to and rest of the program for when the a jump is called
+    syntax Jumpout ::= jumpout(Env, K)
+    // used to identify end of jumpout was reached without a the jump being called and identify jumpouts in the environment
+    syntax JumpoutId ::= jumpoutId(Id)
+    rule <k> jumpout I in E ~> Rest => E ~> jumpoutId(I) </k> // calculate expression ending with a jumpoutId
+         <env> Env => Env[I <- jump(I)][jumpoutId(I) <- jumpout(env(Env), Rest)] </env>
+    // if the jump was never called restore the environment and pass the value to the rest of the program
+    rule <k> E:Dv ~> jumpoutId(I) => Env ~> E ~> Rest </k>
+         <env>... jumpoutId(I) |-> jumpout(Env, Rest) => .Map ...</env> [structural]
+    // a jump call restores the environment and passes the value to the rest of the program
+    rule <k> jump(I) ( E:Dv ) ~> _ => Env ~> E ~> Rest </k>
+         <env>... jumpoutId(I) |-> jumpout(Env, Rest) => .Map ...</env>
+
     // Operations in operations.k
 
     // ---------------
@@ -95,22 +111,24 @@ module SMALL
     rule while (E) C => if (E) { .Decs C while (E) C }
 
     // Trap
+    // denotes the environment to be restored to and rest of the program for when the trap is over or a escapeto is reached
     syntax Trap ::= trap(Env, K)
-                  | trap(Int)
+    // used to identify end of trap was reached without a escapeto and identify traps in the environment
+    syntax TrapId ::= trapId(Int)
     syntax Escs ::= escs(Escs, Int)
-    rule <k> trap { Ds Cs Escs } ~> Rest => escs(reverse(Escs), !N) ~> {Ds Cs} ~> trap(!N) </k>
-         <env> Env </env>
-         <traps> Traps => Traps[!N <- trap(env(Env), Rest)] </traps>    [structural]
+    // setup escs to be added to env, run commands ending with a trapId
+    rule <k> trap { Ds Cs Escs } ~> Rest => escs(reverse(Escs), !N) ~> {Ds Cs} ~> trapId(!N) </k>
+         <env> Env => Env[trapId(!N) <- trap(env(Env), Rest)] </env>
     // add escape labels to the environment
     rule <k> escs((I:Id : Cs:Coms Escs:Escs => Escs), N) ...</k>
          <env> Env => Env[I <- cc(Cs, N)] </env>
     rule escs(.Escs, _) => .                                    [structural]
-    // deal with either an escapeto or the whole trap body being run
-    // TODO: if an inner trap escapesto an outer trap the inner trap is never cleared from memory
+    // an escapeto restores the environment, run the escape commands then run the rest of the program
     rule <k> escapeto(cc(C, N)) ~> _ => Env ~> C ~> K </k>
-         <traps>... N |-> trap(Env, K) => .Map ...</traps>      [structural]
-    rule <k> trap(N) => Env ~> K </k>
-         <traps>... N |-> trap(Env, K) => .Map ...</traps>      [structural]
+         <env>... trapId(N) |-> trap(Env, K) ...</env>          [structural]
+    // if no escapeto was hit then restore the environment and run the rest of the program
+    rule <k> trapId(N) => Env ~> K </k>
+         <env>... trapId(N) |-> trap(Env, K) ...</env>          [structural]
     // reverse function for list of escapes so that first occurances will override later ones
     syntax Escs ::= reverse(Escs)                               [function]
                   | reverse(Escs, Escs)                         [function]
@@ -121,7 +139,7 @@ module SMALL
     // Escape
     syntax EscapeTo ::= escapeto(Cc)
     rule <k> escapeto I ; => escapeto(C) ...</k>
-         <env>... I |-> C:Cc ...</env>
+         <env>... I |-> C:Cc ...</env> //TODO: Refactor this into the other part
 
     // Block
     rule <k> { D:Decs C:Coms } => D ~> C ~> env(Env) ...</k>

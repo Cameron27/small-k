@@ -41,6 +41,7 @@ module SMALL-SYNTAX
                    Exp "|" Exp
                  > right:
                    Exp "?" Exp ":" Exp
+                 > "jumpout" Id "in" Exp
 
 
     syntax Com ::= Exp "=" Exp ";"
