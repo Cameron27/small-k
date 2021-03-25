@@ -62,7 +62,9 @@ module SMALL-SYNTAX
     syntax Dec ::= "const" Id "=" Exp ";"
                  | "var" Id "=" Exp ";"
                  | "proc" Id "(" Ids ")" Block
+                 | "rec" "proc" Id "(" Ids ")" Block
                  | "func" Id "(" Ids ")" "{" Exp "}"
+                 | "rec" "func" Id "(" Ids ")" "{" Exp "}"
     syntax Decs ::= List{Dec, ""}
     syntax Ids ::= List{Id, ","}
 

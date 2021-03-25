@@ -13,8 +13,10 @@ module ADDITIONAL-SYNTAX
     syntax Env ::= env(Map)
 
     syntax Proc ::= proc(Ids, Env, Com)
+                  | recProc(Ids, Env, Com)
 
     syntax Func ::= func(Ids, Env, Exp)
+                  | recFunc(Ids, Env, Exp)
 
     syntax Rv ::= Int | Float | Bool | String
 

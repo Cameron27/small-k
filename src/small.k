@@ -35,6 +35,9 @@ module SMALL
     // setup params to be assigned last to first
     rule params(I , Is, E , Es) => params(Is, Es) ~> param(I, E)    [structural]
     rule params(.Ids, .Exps) => .                               [structural]
+    // assign parameter to environment
+    rule <k> param(I, E) => . ...</k>
+         <env> Env => Env[I <- E] </env>
 
     // Rules to turn a list of expressions into a list of denotable values
     context HOLE:Exp , _:Exps
@@ -71,6 +74,10 @@ module SMALL
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
             requires isDvs(Es)
+
+    // Recursive Function
+    rule recFunc(Is, Env, E) ( Es )
+            => func(Is, Env, E) ( recFunc(Is, Env, E) , Es )    [structural]
 
     // Ternary operation (if then else)
     context (HOLE => reval(HOLE)) ? _ : _
@@ -127,9 +134,10 @@ module SMALL
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
             requires isDvs(Es)
-    // assign parameter to environment
-    rule <k> param(I, E) => . ...</k>
-         <env> Env => Env[I <- E] </env>
+
+    // Recursive Procedure
+    rule recProc(Is, Env, C) ( Es ) ;
+            => proc(Is, Env, C) ( recProc(Is, Env, C) , Es ) ;  [structural]
 
     // If
     context if ( HOLE => reval(HOLE) ) _
@@ -205,8 +213,16 @@ module SMALL
     rule <k> proc I(Is) C => const I = proc(Is, env(Env), C) ; ...</k>
          <env> Env </env>                                       [structural]
 
+    // Recursive Procedure
+    rule <k> rec proc I(Is) C => const I = recProc(I , Is, env(Env), C) ; ...</k>
+         <env> Env </env>                                       [structural]
+
     // Function
     rule <k> func I(Is) { E } => const I = func(Is, env(Env), E) ; ...</k>
+         <env> Env </env>                                       [structural]
+
+    // Recursive Function
+    rule <k> rec func I(Is) { E } => const I = recFunc(I , Is, env(Env), E) ; ...</k>
          <env> Env </env>                                       [structural]
 
     rule D:Dec Ds:Decs => D ~> Ds                               [structural]
