@@ -15,6 +15,7 @@ module SMALL-SYNTAX
                  | String
                  | Id
                  | "read"
+                 | "valof" Block
                  | "(" Exp ")"                                  [bracket]
                  > left:
                    Exp "(" Exp ")"                              [strict]
@@ -52,6 +53,7 @@ module SMALL-SYNTAX
                  | "while" "(" Exp ")" Com
                  | "trap" "{" Decs Coms Escs "}"
                  | "escapeto" Id ";"
+                 | "return" Exp ";"
                  | Block
     syntax Coms ::= List{Com, ""}
     syntax Esc ::= Id ":" Coms

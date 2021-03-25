@@ -78,6 +78,12 @@ module SMALL
          <stack> ListItem(frame(M, _, _)) => .List ...</stack>
             requires N =/=Int M                                 [structural]
 
+    // Valof
+    // enter valof
+    rule <k> valof B ~> Rest => B ~> "No return encountered" </k>
+         <env> Env => Env["return" <- !N] </env>
+         <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
+
     // Operations in operations.k
 
     // ---------------
@@ -142,6 +148,18 @@ module SMALL
          <env>... I |-> trapLabel(_, N) ...</env>
          <stack> ListItem(frame(M, _, _)) => .List ...</stack>
             requires N =/=Int M                                 [structural]
+
+    // Return
+    context return (HOLE => reval(HOLE)) ;
+    // resolve an encounted return
+    rule <k> return E:Dv ; ~> _ => Env ~> E ~> Rest </k>
+         <env>... "return" |-> N ...</env>
+         <stack> ListItem(frame(N, Env, Rest)) => .List ...</stack>
+    // clear stack until correct stack frame is reached
+    rule <k> return _:Dv ; ...</k>
+         <env>... "return" |-> N ...</env>
+         <stack> ListItem(frame(M, _, _)) => .List ...</stack>
+            requires N =/=Int M
 
     // Block
     rule <k> { D:Decs C:Coms } ~> Rest => D ~> C ~> pop() </k>
