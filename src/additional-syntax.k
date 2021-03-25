@@ -12,13 +12,19 @@ module ADDITIONAL-SYNTAX
 
     syntax Env ::= env(Map)
 
-    syntax Proc ::= proc(Id, Env, Com)
+    syntax Proc ::= proc(Ids, Env, Com)
 
-    syntax Func ::= func(Id, Env, Exp)
+    syntax Func ::= func(Ids, Env, Exp)
 
     syntax Rv ::= Int | Float | Bool | String
 
     syntax Dv ::= Loc | Rv | Proc | Func
+
+    syntax Dvs
+    rule isDvs(E:Exp , Es:Exps) => true
+        requires isDv(E) andBool isDvs(Es)
+    rule isDvs(.Exps) => true
+    rule isDvs(_) => false                                      [owise]
 
     syntax Exp ::= Dv
 

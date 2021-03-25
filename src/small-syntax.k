@@ -18,7 +18,7 @@ module SMALL-SYNTAX
                  | "valof" Block
                  | "(" Exp ")"                                  [bracket]
                  > left:
-                   Exp "(" Exp ")"                              [strict]
+                   Exp "(" Exps ")"
                  > left:
                    Exp "*" Exp
                  | Exp "/" Exp
@@ -43,11 +43,11 @@ module SMALL-SYNTAX
                  > right:
                    Exp "?" Exp ":" Exp
                  > "jumpout" Id "in" Exp
-
+    syntax Exps ::= List{Exp, ","}
 
     syntax Com ::= Exp "=" Exp ";"
                  | "output" Exp ";"
-                 | Exp "(" Exp ")" ";"                          [strict]
+                 | Exp "(" Exps ")" ";"
                  | "if" "(" Exp ")" Com "else" Com
                  | "if" "(" Exp ")" Com                         [prefer]
                  | "while" "(" Exp ")" Com
@@ -61,9 +61,10 @@ module SMALL-SYNTAX
 
     syntax Dec ::= "const" Id "=" Exp ";"
                  | "var" Id "=" Exp ";"
-                 | "proc" Id "(" Id ")" Block
-                 | "func" Id "(" Id ")" "{" Exp "}"
+                 | "proc" Id "(" Ids ")" Block
+                 | "func" Id "(" Ids ")" "{" Exp "}"
     syntax Decs ::= List{Dec, ""}
+    syntax Ids ::= List{Id, ","}
 
     syntax Block ::= "{" Decs Coms "}"
 endmodule

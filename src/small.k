@@ -29,6 +29,18 @@ module SMALL
     rule <k> pop() => Env ~> Rest </k>
          <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
 
+    // Syntax for assigning parameters to values, used by procedures and functions
+    syntax Params ::= params(Ids, Exps)
+                    | param(Id, Exp)
+    // setup params to be assigned last to first
+    rule params(I , Is, E , Es) => params(Is, Es) ~> param(I, E)    [structural]
+    rule params(.Ids, .Exps) => .                               [structural]
+
+    // Rules to turn a list of expressions into a list of denotable values
+    context HOLE:Exp , _:Exps
+    context _:Dv , HOLE:Exps
+        requires HOLE =/=K .Exps                                [result(Dvs)]
+
     // ---------------
     // |     Pgm     |
     // ---------------
@@ -52,11 +64,13 @@ module SMALL
          <env>... I |-> E ...</env>
 
     // Function
-    syntax FuncClojure ::= funcClojure(Exp, Env)                [strict(1)]
-    rule <k> func(I, env(Env'), E) ( E1:Dv )
-                => funcClojure(E, env(Env)) ...</k>
-         <env> Env => Env'[I <- E1] </env>
-    rule funcClojure(E:Dv, Env) => Env ~> E                     [structural]
+    context HOLE:Exp ( _ )
+    context _:Dv ( HOLE )                                       [result(Dvs)]
+    rule <k> func(Is, env(Env'), E) ( Es ) ~> Rest
+                => params(Is, Es) ~> E ~> popE() </k>
+         <env> Env => Env' </env>
+         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
+            requires isDvs(Es)
 
     // Ternary operation (if then else)
     context (HOLE => reval(HOLE)) ? _ : _
@@ -71,10 +85,10 @@ module SMALL
          <env> Env => Env[I <- jump(!N)] </env>
          <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
     // resolve incounted call of jump function
-    rule <k> jump(N) ( E:Dv ) ~> _ => Env ~> E ~> Rest </k>
+    rule <k> jump(N) ( E:Dv , .Exps ) ~> _ => Env ~> E ~> Rest </k>
          <stack> ListItem(frame(N, Env, Rest)) => .List ...</stack>
     // clear stack until correct stack frame is reached
-    rule <k> jump(N) ( _:Dv ) ...</k>
+    rule <k> jump(N) ( _:Dv , .Exps ) ...</k>
          <stack> ListItem(frame(M, _, _)) => .List ...</stack>
             requires N =/=Int M                                 [structural]
 
@@ -83,8 +97,6 @@ module SMALL
     rule <k> valof B ~> Rest => B ~> "No return encountered" </k>
          <env> Env => Env["return" <- !N] </env>
          <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
-
-    // Operations in operations.k
 
     // ---------------
     // |     Com     |
@@ -108,8 +120,16 @@ module SMALL
          <out> List => List ListItem(E) ListItem("\n") </out>   [owise]
 
     // Procedure
-    rule <k> proc(I, env(Env'), C) ( E:Dv ) ; => C ~> env(Env) ...</k>
-         <env> Env => Env'[I <- E] </env>
+    context HOLE ( _ ) ;
+    context _:Dv ( HOLE ) ;                                     [result(Dvs)]
+    // enter procedure
+    rule <k> proc(Is, env(Env'), C) ( Es ) ; ~> Rest => params(Is, Es) ~> C ~> pop() </k>
+         <env> Env => Env' </env>
+         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
+            requires isDvs(Es)
+    // assign parameter to environment
+    rule <k> param(I, E) => . ...</k>
+         <env> Env => Env[I <- E] </env>
 
     // If
     context if ( HOLE => reval(HOLE) ) _
@@ -124,21 +144,18 @@ module SMALL
 
     // Trap
     syntax Escs ::= escs(Escs, Int)
+                  | esc(Esc, Int)
     // enter trap
-    rule <k> trap { Ds Cs Escs } ~> Rest => escs(reverseEscs(Escs), !N) ~> { Ds Cs } ~> pop() </k>
+    rule <k> trap { Ds Cs Escs } ~> Rest => escs(Escs, !N) ~> { Ds Cs } ~> pop() </k>
          <env> Env </env>
          <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
+    // setup traps to be assigned last to first
+    rule <k> escs((I : Cs Escs), N) => escs(Escs, N) ~> esc(I : Cs, N) ...</k>  [structural]
+    rule escs(.Escs, _) => .                                    [structural]
     // add lables to environment
     syntax TrapLabel ::= trapLabel(Coms, Int)
-    rule <k> escs((I:Id : Cs:Coms Escs:Escs => Escs), N) ...</k>
+    rule <k> esc(I : Cs, N) => . ...</k>
          <env> Env => Env[I <- trapLabel(Cs, N)] </env>
-    rule escs(.Escs, _) => .                                    [structural]
-    // reverse function for list of escapes so that first occurances will override later ones
-    syntax Escs ::= reverseEscs(Escs)                           [function]
-                  | reverseEscs(Escs, Escs)                     [function]
-    rule reverseEscs(X) => reverseEscs(X, .Escs)
-    rule reverseEscs(X Xs, Ys) => reverseEscs(Xs, X Ys)
-    rule reverseEscs(.Escs, Ys) => Ys
     // resolve an encountered escapeto
     rule <k> escapeto I ; ~> _ => Env ~> Cs ~> Rest </k>
          <env>... I |-> trapLabel(Cs, N) ...</env>
@@ -185,11 +202,11 @@ module SMALL
          <store> Store => Store[Loc(!L) <- E] </store>
 
     // Procedure
-    rule <k> proc I(I1) C => const I = proc(I1, env(Env), C) ; ...</k>
+    rule <k> proc I(Is) C => const I = proc(Is, env(Env), C) ; ...</k>
          <env> Env </env>                                       [structural]
 
     // Function
-    rule <k> func I(I1) { E } => const I = func(I1, env(Env), E) ; ...</k>
+    rule <k> func I(Is) { E } => const I = func(Is, env(Env), E) ; ...</k>
          <env> Env </env>                                       [structural]
 
     rule D:Dec Ds:Decs => D ~> Ds                               [structural]
