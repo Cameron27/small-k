@@ -13,8 +13,8 @@ module SMALL
     // Evaluate RVal
     rule reval(E) => #reval(E)
         requires notBool isDv(E)                                [structural]
-    rule #reval(E) => reval(E)
-        requires isRv(E)                                        [structural]
+    rule #reval(E:Rv) => reval(E)
+        requires notBool isLoc(E)                               [structural]
     rule <k> #reval(L) => reval(E) ...</k>
          <store>... L |-> E ...</store>
 
@@ -105,6 +105,11 @@ module SMALL
          <env> Env => Env["return" <- !N] </env>
          <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
 
+    // Contents
+    context cont HOLE
+    rule <k> cont L:Loc => E ...</k>
+         <store>... L |-> E ...</store>
+
     // ---------------
     // |     Com     |
     // ---------------
@@ -119,6 +124,8 @@ module SMALL
     context output (HOLE => reval(HOLE)) ;
     rule <k> output E:Float ; => . ...</k>
          <out> List => List ListItem(printFloat(E)) ListItem("\n") </out>
+    rule <k> output Loc(I) ; => . ...</k>
+         <out> List => List ListItem("Loc(" +String Int2String(I) +String ")") ListItem("\n") </out>
     rule <k> output true ; => . ...</k>
          <out> List => List ListItem("true") ListItem("\n") </out>
     rule <k> output false ; => . ...</k>
@@ -200,7 +207,7 @@ module SMALL
 
     // Constants
     context const _ = (HOLE => reval(HOLE)) ;
-    rule <k> const I = E:Dv ; => . ...</k>
+    rule <k> const I = E:Rv ; => . ...</k>
          <env> Env => Env[I <- E] </env>
 
     // Variables
@@ -209,21 +216,27 @@ module SMALL
          <env> Env => Env[I <- Loc(!L:Int)] </env>
          <store> Store => Store[Loc(!L) <- E] </store>
 
+    // References
+    context ref _ = HOLE ;
+    rule <k> ref I = E:Rv ; => . ...</k>
+         <env> Env => Env[I <- Loc(!L:Int)] </env>
+         <store> Store => Store[Loc(!L) <- E] </store>
+
     // Procedure
-    rule <k> proc I(Is) C => const I = proc(Is, env(Env), C) ; ...</k>
-         <env> Env </env>                                       [structural]
+    rule <k> proc I(Is) C => . ...</k>
+         <env> Env => Env[I <- proc(Is, env(Env), C)] </env>    [structural]
 
     // Recursive Procedure
-    rule <k> rec proc I(Is) C => const I = recProc(I , Is, env(Env), C) ; ...</k>
-         <env> Env </env>                                       [structural]
+    rule <k> rec proc I(Is) C => . ...</k>
+         <env> Env => Env[I <- recProc(I , Is, env(Env), C)] </env> [structural]
 
     // Function
-    rule <k> func I(Is) { E } => const I = func(Is, env(Env), E) ; ...</k>
-         <env> Env </env>                                       [structural]
+    rule <k> func I(Is) { E } => . ...</k>
+         <env> Env => Env[I <- func(Is, env(Env), E)] </env>    [structural]
 
     // Recursive Function
-    rule <k> rec func I(Is) { E } => const I = recFunc(I , Is, env(Env), E) ; ...</k>
-         <env> Env </env>                                       [structural]
+    rule <k> rec func I(Is) { E } => . ...</k>
+         <env> Env => Env[I <- recFunc(I , Is, env(Env), E)] </env> [structural]
 
     rule D:Dec Ds:Decs => D ~> Ds                               [structural]
     rule .Decs => .                                             [structural]

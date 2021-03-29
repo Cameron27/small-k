@@ -18,9 +18,9 @@ module ADDITIONAL-SYNTAX
     syntax Func ::= func(Ids, Env, Exp)
                   | recFunc(Ids, Env, Exp)
 
-    syntax Rv ::= Int | Float | Bool | String
+    syntax Rv ::= Int | Float | Bool | String | Loc
 
-    syntax Dv ::= Loc | Rv | Proc | Func
+    syntax Dv ::= Rv | Proc | Func
 
     syntax Dvs
     rule isDvs(E:Exp , Es:Exps) => true
