@@ -16,10 +16,11 @@ module SMALL-SYNTAX
                  | Id
                  | "read"
                  | "valof" Block
-                 | "cont" Exp
                  | "(" Exp ")"                                  [bracket]
                  > left:
                    Exp "(" Exps ")"
+                 > Exp "[" Exp "]"
+                 > "cont" Exp
                  > left:
                    Exp "*" Exp
                  | Exp "/" Exp
@@ -63,6 +64,7 @@ module SMALL-SYNTAX
     syntax Dec ::= "const" Id "=" Exp ";"
                  | "var" Id "=" Exp ";"
                  | "ref" Id "=" Exp ";"
+                 | "array" Id "[" Exp ":" Exp "]" ";"
                  | "proc" Id "(" Ids ")" Block
                  | "rec" "proc" Id "(" Ids ")" Block
                  | "func" Id "(" Ids ")" "{" Exp "}"

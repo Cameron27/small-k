@@ -110,6 +110,10 @@ module SMALL
     rule <k> cont L:Loc => E ...</k>
          <store>... L |-> E ...</store>
 
+    context HOLE:Exp [ _ ]                                      [result(Dv)]
+    context _:Dv [ HOLE => reval(HOLE) ]                        [result(Dv)]
+    rule array(N1, N2, List) [ N:Int ] => List[N -Int N1] requires N >=Int N1 andBool N <=Int N2
+
     // ---------------
     // |     Com     |
     // ---------------
@@ -118,7 +122,7 @@ module SMALL
     context HOLE = _ ;
     context _:Loc = (HOLE => reval(HOLE)) ;
     rule <k> L:Loc = E:Rv ; => . ...</k>
-         <store>... L |-> (_ => E) ...</store>
+         <store> Store => Store[L <- E] </store>
 
     // Output
     context output (HOLE => reval(HOLE)) ;
@@ -221,6 +225,18 @@ module SMALL
     rule <k> ref I = E:Rv ; => . ...</k>
          <env> Env => Env[I <- Loc(!L:Int)] </env>
          <store> Store => Store[Loc(!L) <- E] </store>
+
+    // Array
+    context array _ [ HOLE => reval(HOLE) : _ ] ;
+    context array _ [ _:Dv : HOLE => reval(HOLE) ] ;
+    syntax ArrayDec ::= createArrayLocations(Id, Array, Int)
+    rule array I [ N1:Int : N2:Int ] ; => createArrayLocations(I, array(N1, N2, .List), N2 -Int N1 +Int 1)
+        requires N2 >=Int N1                                    [structural]
+    rule <k> createArrayLocations(_, array(_, _, List => ListItem(Loc(!_N)) List), N => N -Int 1) ...</k>
+        requires N >Int 0
+    rule <k> createArrayLocations(I, Array, 0) => . ...</k>
+         <env> Env => Env[I <- Array] </env>
+
 
     // Procedure
     rule <k> proc I(Is) C => . ...</k>
