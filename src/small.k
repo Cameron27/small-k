@@ -110,9 +110,16 @@ module SMALL
     rule <k> cont L:Loc => E ...</k>
          <store>... L |-> E ...</store>
 
+    // Array Access
     context HOLE:Exp [ _ ]                                      [result(Dv)]
     context _:Dv [ HOLE => reval(HOLE) ]                        [result(Dv)]
     rule array(N1, N2, List) [ N:Int ] => List[N -Int N1] requires N >=Int N1 andBool N <=Int N2
+
+    // Dot
+    context HOLE . _
+    rule <k> record(REnv) . E ~> Rest => E ~> popE() </k>
+         <env> Env => updateMap(Env, REnv) </env>
+         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
 
     // ---------------
     // |     Com     |
@@ -197,6 +204,12 @@ module SMALL
          <stack> ListItem(frame(M, _, _)) => .List ...</stack>
             requires N =/=Int M
 
+    // With Do
+    context with HOLE do _
+    rule <k> with record(REnv) do C ~> Rest => C ~> pop() </k>
+         <env> Env => updateMap(Env, REnv) </env>
+         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
+
     // Block
     rule <k> { D:Decs C:Coms } ~> Rest => D ~> C ~> pop() </k>
          <env> Env </env>
@@ -229,14 +242,20 @@ module SMALL
     // Array
     context array _ [ HOLE => reval(HOLE) : _ ] ;
     context array _ [ _:Dv : HOLE => reval(HOLE) ] ;
-    syntax ArrayDec ::= createArrayLocations(Id, Array, Int)
-    rule array I [ N1:Int : N2:Int ] ; => createArrayLocations(I, array(N1, N2, .List), N2 -Int N1 +Int 1)
+    syntax ArrayDec ::= createArrayLocs(Id, Array, Int)
+    rule array I [ N1:Int : N2:Int ] ; => createArrayLocs(I, array(N1, N2, .List), N2 -Int N1 +Int 1)
         requires N2 >=Int N1                                    [structural]
-    rule <k> createArrayLocations(_, array(_, _, List => ListItem(Loc(!_N)) List), N => N -Int 1) ...</k>
+    rule <k> createArrayLocs(_, array(_, _, List => ListItem(Loc(!_N)) List), N => N -Int 1) ...</k>
         requires N >Int 0
-    rule <k> createArrayLocations(I, Array, 0) => . ...</k>
+    rule <k> createArrayLocs(I, Array, 0) => . ...</k>
          <env> Env => Env[I <- Array] </env>
 
+    // Record
+    syntax RecordDec ::= createRecordLocs(Id, Record, Ids)
+    rule record I ( Is ) ; => createRecordLocs(I, record(.Map), Is) [structural]
+    rule createRecordLocs(_, record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
+    rule <k> createRecordLocs(I, Record, .Ids) => . ...</k>
+         <env> Env => Env[I <- Record] </env>
 
     // Procedure
     rule <k> proc I(Is) C => . ...</k>

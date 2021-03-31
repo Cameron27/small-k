@@ -20,9 +20,11 @@ module ADDITIONAL-SYNTAX
 
     syntax Array ::= array(Int, Int, List)
 
+    syntax Record ::= record(Map)
+
     syntax Rv ::= Int | Float | Bool | String | Loc
 
-    syntax Dv ::= Rv | Proc | Func | Array
+    syntax Dv ::= Rv | Proc | Func | Array | Record
 
     syntax Dvs
     rule isDvs(E:Exp , Es:Exps) => true

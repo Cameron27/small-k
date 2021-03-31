@@ -19,6 +19,8 @@ module SMALL-SYNTAX
                  | "(" Exp ")"                                  [bracket]
                  > left:
                    Exp "(" Exps ")"
+                 > left:
+                   Exp "." Exp
                  > Exp "[" Exp "]"
                  > "cont" Exp
                  > left:
@@ -56,6 +58,7 @@ module SMALL-SYNTAX
                  | "trap" "{" Decs Coms Escs "}"
                  | "escapeto" Id ";"
                  | "return" Exp ";"
+                 | "with" Exp "do" Com
                  | Block
     syntax Coms ::= List{Com, ""}
     syntax Esc ::= Id ":" Coms
@@ -65,6 +68,7 @@ module SMALL-SYNTAX
                  | "var" Id "=" Exp ";"
                  | "ref" Id "=" Exp ";"
                  | "array" Id "[" Exp ":" Exp "]" ";"
+                 | "record" Id "(" Ids ")" ";"
                  | "proc" Id "(" Ids ")" Block
                  | "rec" "proc" Id "(" Ids ")" Block
                  | "func" Id "(" Ids ")" "{" Exp "}"
