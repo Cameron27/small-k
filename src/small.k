@@ -66,6 +66,27 @@ module SMALL
     rule <k> I:Id => E ...</k>
          <env>... I |-> E ...</env>
 
+    // References Expression
+    context ref HOLE
+    rule <k> ref E:Dv => Loc(!N) ...</k>
+         <store> Store => Store[Loc(!N) <- E] </store>
+
+    // Array Expression
+    context array [ HOLE => reval(HOLE) : _ ]                   [result(Dv)]
+    context array [ _:Dv : HOLE => reval(HOLE) ]                [result(Dv)]
+    syntax ArrayDec ::= createArrayLocs(Array, Int)
+    rule array [ N1:Int : N2:Int ] => createArrayLocs(array(N1, N2, .List), N2 -Int N1 +Int 1)
+        requires N2 >=Int N1                                    [structural]
+    rule <k> createArrayLocs(array(_, _, List => ListItem(Loc(!_N)) List), N => N -Int 1) ...</k>
+        requires N >Int 0
+    rule createArrayLocs(Array, 0) => Array
+
+    // Record
+    syntax RecordDec ::= createRecordLocs(Record, Ids)
+    rule record ( Is ) => createRecordLocs(record(.Map), Is)    [structural]
+    rule createRecordLocs(record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
+    rule createRecordLocs(Record, .Ids) => Record
+
     // Function
     context HOLE:Exp ( _ )
     context _:Dv ( HOLE )                                       [result(Dvs)]
@@ -111,12 +132,12 @@ module SMALL
          <store>... L |-> E ...</store>
 
     // Array Access
-    context HOLE:Exp [ _ ]                                      [result(Dv)]
+    context (HOLE:Exp => reval(HOLE)) [ _ ]                     [result(Dv)]
     context _:Dv [ HOLE => reval(HOLE) ]                        [result(Dv)]
     rule array(N1, N2, List) [ N:Int ] => List[N -Int N1] requires N >=Int N1 andBool N <=Int N2
 
     // Dot
-    context HOLE . _
+    context (HOLE => reval(HOLE)) . _
     rule <k> record(REnv) . E ~> Rest => E ~> popE() </k>
          <env> Env => updateMap(Env, REnv) </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
@@ -205,7 +226,7 @@ module SMALL
             requires N =/=Int M
 
     // With Do
-    context with HOLE do _
+    context with (HOLE => reval(HOLE)) do _
     rule <k> with record(REnv) do C ~> Rest => C ~> pop() </k>
          <env> Env => updateMap(Env, REnv) </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
@@ -230,14 +251,8 @@ module SMALL
     // Variables
     context var _ = (HOLE => reval(HOLE)) ;
     rule <k> var I = E:Rv ; => . ...</k>
-         <env> Env => Env[I <- Loc(!L:Int)] </env>
-         <store> Store => Store[Loc(!L) <- E] </store>
-
-    // References
-    context ref _ = HOLE ;
-    rule <k> ref I = E:Rv ; => . ...</k>
-         <env> Env => Env[I <- Loc(!L:Int)] </env>
-         <store> Store => Store[Loc(!L) <- E] </store>
+         <env> Env => Env[I <- Loc(!N)] </env>
+         <store> Store => Store[Loc(!N) <- E] </store>
 
     // Array
     context array _ [ HOLE => reval(HOLE) : _ ] ;
@@ -254,7 +269,7 @@ module SMALL
     syntax RecordDec ::= createRecordLocs(Id, Record, Ids)
     rule record I ( Is ) ; => createRecordLocs(I, record(.Map), Is) [structural]
     rule createRecordLocs(_, record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
-    rule <k> createRecordLocs(I, Record, .Ids) => . ...</k>
+    rule <k> createRecordLocs(I, Record:Record, .Ids) => . ...</k>
          <env> Env => Env[I <- Record] </env>
 
     // Procedure

@@ -22,9 +22,9 @@ module ADDITIONAL-SYNTAX
 
     syntax Record ::= record(Map)
 
-    syntax Rv ::= Int | Float | Bool | String | Loc
+    syntax Rv ::= Int | Float | Bool | String | Loc | Array | Record
 
-    syntax Dv ::= Rv | Proc | Func | Array | Record
+    syntax Dv ::= Rv | Proc | Func
 
     syntax Dvs
     rule isDvs(E:Exp , Es:Exps) => true
