@@ -145,6 +145,10 @@ module SMALL
          <env> Env => updateMap(Env, REnv) </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
 
+    // Not
+    context ! (HOLE => reval(HOLE))
+    rule ! B:Bool => notBool B
+
     // ---------------
     // |     Com     |
     // ---------------
@@ -190,7 +194,10 @@ module SMALL
     rule if ( false ) _ else C => C
 
     // While
-    rule while (E) C => if (E) { .Decs C while (E) C }
+    rule while (E) C => if (E) { .Decs C while (E) C }          [structural]
+
+    // Repeat
+    rule repeat C until ( E ) =>  C ~> if (! E) repeat C until (E)  [structural]
 
     // Trap
     syntax Escs ::= escs(Escs, Int)

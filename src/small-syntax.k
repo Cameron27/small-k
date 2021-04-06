@@ -26,6 +26,7 @@ module SMALL-SYNTAX
                  > Exp "[" Exp "]"
                  > "cont" Exp
                  | "ref" Exp
+                 | "!" Exp
                  > left:
                    Exp "*" Exp
                  | Exp "/" Exp
@@ -58,6 +59,7 @@ module SMALL-SYNTAX
                  | "if" "(" Exp ")" Com "else" Com
                  | "if" "(" Exp ")" Com                         [prefer]
                  | "while" "(" Exp ")" Com
+                 | "repeat" Com "until" "(" Exp ")"
                  | "trap" "{" Decs Coms Escs "}"
                  | "escapeto" Id ";"
                  | "return" Exp ";"
