@@ -12,19 +12,21 @@ module ADDITIONAL-SYNTAX
 
     syntax Env ::= env(Map)
 
+    syntax Array ::= array(Int, Int, List)
+
+    syntax Record ::= record(Map)
+
     syntax Proc ::= proc(Ids, Env, Com)
                   | recProc(Ids, Env, Com)
 
     syntax Func ::= func(Ids, Env, Exp)
                   | recFunc(Ids, Env, Exp)
 
-    syntax Array ::= array(Int, Int, List)
-
-    syntax Record ::= record(Map)
+    syntax File ::= file(List, Int, Loc)
 
     syntax Rv ::= Int | Float | Bool | String | Loc | Array | Record
 
-    syntax Dv ::= Rv | Proc | Func
+    syntax Dv ::= Rv | Proc | Func | File
 
     syntax Dvs
     rule isDvs(E:Exp , Es:Exps) => true

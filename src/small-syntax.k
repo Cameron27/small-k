@@ -26,6 +26,7 @@ module SMALL-SYNTAX
                  > Exp "[" Exp "]"
                  > "cont" Exp
                  | "ref" Exp
+                 | "eof" Exp
                  > left:
                    Exp "*" Exp
                  | Exp "/" Exp
@@ -62,6 +63,10 @@ module SMALL-SYNTAX
                  | "escapeto" Id ";"
                  | "return" Exp ";"
                  | "with" Exp "do" Com
+                 | "reset" Exp ";"
+                 | "rewrite" Exp ";"
+                 | "get" Exp ";"
+                 | "put" Exp ";"
                  | Block
     syntax Coms ::= List{Com, ""}
     syntax Esc ::= Id ":" Coms
@@ -71,6 +76,7 @@ module SMALL-SYNTAX
                  | "var" Id "=" Exp ";"
                  | "array" Id "[" Exp ":" Exp "]" ";"
                  | "record" Id "(" Ids ")" ";"
+                 | "file" Id "withbuffer" Id ";"
                  | "proc" Id "(" Ids ")" Block
                  | "rec" "proc" Id "(" Ids ")" Block
                  | "func" Id "(" Ids ")" "{" Exp "}"
