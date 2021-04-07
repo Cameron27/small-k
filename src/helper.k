@@ -57,4 +57,12 @@ module HELPER
     // Get the first character from a string
     syntax String ::= headString(String)                        [function, functional]
     rule headString(S) => substrString(S, 0, 1)
+
+    syntax Int ::= sign(Int)                                    [function, functional]
+    rule sign(X) => 1
+        requires X >Int 0
+    rule sign(X) => 0
+        requires X ==Int 0
+    rule sign(X) => -1
+        requires X <Int 0
 endmodule

@@ -11,6 +11,8 @@ module SMALL
     imports CONFIGURATION
     imports OPERATIONS
     imports DEFAULT-ENVIRONMENT
+    imports DOUBLE
+    imports ALTINT
 
     // Evaluate RVal
     rule reval(E) => #reval(E)
@@ -198,6 +200,39 @@ module SMALL
 
     // Repeat
     rule repeat C until ( E ) =>  C ~> if (! E) repeat C until (E)  [structural]
+
+    // For
+    // for expression
+    context for ( _ = (HOLE => reval(HOLE)) ) _
+    rule <k> for ( I = E:Rv ) C => C ...</k>
+         <env>... I |-> L:Loc ...</env>
+         <store> Store => Store[L <- E] </store>
+    // for while
+    syntax ForEval ::= whileFor(Loc, Exp, Exp, K)
+    context whileFor(_, (HOLE => reval(HOLE)), _, _)
+    context whileFor(_, _:Rv, (HOLE => reval(HOLE)), _)
+    rule <k> for ( I = E1 while E2 ) C => whileFor(L, E1, E2, C ~> for ( I = E1 while E2 ) C) ...</k>
+         <env>... I |-> L ...</env>
+            requires isLoc(L)                                   [structural]
+    rule <k> whileFor(L, E:Rv, true, C) => C ...</k>
+         <store> Store => Store[L <- E] </store>
+    rule whileFor(_, _:Rv, false, _) => .
+    // for step
+    syntax ForEval ::= stepFor(Loc, Int, Exp, Exp, Com, Com)
+                     | insertN(Int, Com)
+    context for ( _ = (HOLE => reval(HOLE)) step _ until _ ) _
+    context stepFor(_, _, (HOLE => reval(HOLE)), _, _, _)
+    context stepFor(_, _, _:Rv, (HOLE => reval(HOLE)), _, _)
+    rule <k> for ( I = N:Int step E1 until E2 ) C => stepFor(L, N, E1, E2, C, for ( I = N step E1 until E2 ) C) ...</k>
+         <env>... I |-> L ...</env>
+            requires isLoc(L)                                   [structural]
+    rule <k> stepFor(L, N:Int, N1:Int, N2:Int, C1, C2) => C1 ~> insertN(N +Int N1, C2) ...</k>
+         <store> Store => Store[L <- N] </store>
+            requires ((N -Int N2) *Int sign(N1)) <Int 1
+    rule stepFor(_, _:Int, _:Int, _:Int, _, _) => .             [owise]
+    rule insertN(N, for ( I = _ step E1 until E2 ) C ) => for ( I = N step E1 until E2 ) C
+    // for chain
+    rule <k> for ( I = F1 , F2 ) C => for ( I = F1 ) C ~> for ( I = F2 ) C ...</k>
 
     // Trap
     syntax Escs ::= escs(Escs, Int)

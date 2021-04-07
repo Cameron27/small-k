@@ -2,6 +2,7 @@ requires "small-syntax.k"
 
 module CONFIGURATION
     imports SMALL-SYNTAX
+    imports MAP
 
     configuration <T>
         <env> .Map </env>

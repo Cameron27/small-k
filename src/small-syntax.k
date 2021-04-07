@@ -1,10 +1,12 @@
 requires "helper.k"
 
 module SMALL-SYNTAX
-    imports ID
-    imports MAP
-    imports ALTINT
-    imports DOUBLE
+    imports ID-SYNTAX
+    imports ALTINT-SYNTAX
+    imports DOUBLE-SYNTAX
+    imports STRING-SYNTAX
+    imports INT-SYNTAX
+    imports BOOL-SYNTAX
 
     syntax Pgm ::= "program" Block
 
@@ -60,6 +62,7 @@ module SMALL-SYNTAX
                  | "if" "(" Exp ")" Com                         [prefer]
                  | "while" "(" Exp ")" Com
                  | "repeat" Com "until" "(" Exp ")"
+                 | "for" "(" Id "=" For ")" Com
                  | "trap" "{" Decs Coms Escs "}"
                  | "escapeto" Id ";"
                  | "return" Exp ";"
@@ -82,15 +85,23 @@ module SMALL-SYNTAX
     syntax Ids ::= List{Id, ","}
 
     syntax Block ::= "{" Decs Coms "}"
+
+    syntax For ::= Exp
+                 | Exp "while" Exp
+                 | Exp "step" Exp "until" Exp
+                 | For "," For                                  [left]
+endmodule
+
+module ALTINT-SYNTAX
+    syntax AltInt ::= r"[+-]?0[xX][0-9a-fA-F]+"                 [prefer, token, prec(2)]
+    syntax AltInt ::= r"[+-]?0[oO][0-7]+"                       [prefer, token, prec(2)]
 endmodule
 
 module ALTINT
+    imports ALTINT-SYNTAX
     imports INT
     imports STRING
     imports HELPER
-
-    syntax AltInt ::= r"[+-]?0[xX][0-9a-fA-F]+"                 [prefer, token, prec(2)]
-    syntax AltInt ::= r"[+-]?0[oO][0-7]+"                       [prefer, token, prec(2)]
 
     syntax String ::= AltInt2String(AltInt)                     [function, functional, hook(STRING.token2string)]
 
@@ -108,11 +119,14 @@ module ALTINT
     rule decode(S, B, V) => S *Int String2Base(V, B)
 endmodule
 
+module DOUBLE-SYNTAX
+    syntax Double ::= r"[+-]?[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?" [token, prec(2)]
+endmodule
+
 module DOUBLE
+    imports DOUBLE-SYNTAX
     imports STRING
     imports FLOAT
-
-    syntax Double ::= r"[+-]?[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?" [token, prec(2)]
 
     syntax String ::= Double2String(Double)                     [function, functional, hook(STRING.token2string)]
 
