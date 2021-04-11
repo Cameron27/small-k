@@ -6,6 +6,7 @@ module CONFIGURATION
 
     configuration <T>
         <env> .Map </env>
+        <globalEnv> .Map </globalEnv>
         <store> .Map </store>
         <stack> .List </stack>
         <in stream="stdin"> .List </in>

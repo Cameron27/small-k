@@ -3,4 +3,4 @@
 echo "Compiling..."
 scriptdir="$(dirname "$0")"
 cd $scriptdir
-kompile -d . "./src/small.k" $1
+kompile -d . "./src/small.k" "--gen-glr-bison-parser" $@

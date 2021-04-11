@@ -13,6 +13,7 @@ module SMALL
     imports DEFAULT-ENVIRONMENT
     imports DOUBLE
     imports ALTINT
+    imports K-LOCATIONS
 
     // Evaluate RVal
     rule reval(E) => #reval(E)
@@ -297,6 +298,27 @@ module SMALL
     context var _ = (HOLE => reval(HOLE)) ;
     rule <k> var I = E:Rv ; => . ...</k>
          <env> Env => Env[I <- Loc(!N)] </env>
+         <store> Store => Store[Loc(!N) <- E] </store>
+
+    // Own
+    syntax Dec ::= own(Id, FileLoc, Exp)
+    syntax EvalOwn ::= evalOwn(FileLoc, Exp)
+    syntax FileLoc ::= fileLoc(Int, Int)
+    // the location of the own declaration in the file is is used as the unique identifier for the declaration
+    rule #location(own I = E ;, _, SL, SC, _, _) => own(I, fileLoc(SL, SC), E)
+    rule <k> own(I, FL, _) => . ...</k>
+         <env> Env => Env[I <- L] </env>
+         <globalEnv>... FL |-> L ...</globalEnv>                [owise]
+    // first time evaluation, set exp to be evaluated and reset to default env
+    rule <k> own(I, FL, E) ~> Rest => evalOwn(FL, E) ~> pop() </k>
+         <env> Env => defaultEnvironment() </env>
+         <globalEnv> GEnv </globalEnv>
+         <stack> Stack => ListItem(frame(!_N, env(Env), own(I, FL, E) ~> Rest)) Stack </stack>
+            requires notBool FL in_keys(GEnv)
+    // eval the exp and create an binding in the global environment to a location
+    context evalOwn(_, (HOLE => reval(HOLE)))
+    rule <k> evalOwn(FL, E:Rv) => . ...</k>
+         <globalEnv> GEnv => GEnv[FL <- Loc(!N)] </globalEnv>
          <store> Store => Store[Loc(!N) <- E] </store>
 
     // Array
