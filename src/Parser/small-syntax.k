@@ -1,4 +1,5 @@
-requires "helper.k"
+requires "double.k"
+requires "altint.k"
 
 module SMALL-SYNTAX
     imports ID-SYNTAX
@@ -93,45 +94,4 @@ module SMALL-SYNTAX
                  | Exp "while" Exp
                  | Exp "step" Exp "until" Exp
                  | For "," For                                  [left]
-endmodule
-
-module ALTINT-SYNTAX
-    syntax AltInt ::= r"[+-]?0[xX][0-9a-fA-F]+"                 [prefer, token, prec(2)]
-    syntax AltInt ::= r"[+-]?0[oO][0-7]+"                       [prefer, token, prec(2)]
-endmodule
-
-module ALTINT
-    imports ALTINT-SYNTAX
-    imports INT
-    imports STRING
-    imports HELPER
-
-    syntax String ::= AltInt2String(AltInt)                     [function, functional, hook(STRING.token2string)]
-
-    syntax AltIntDecode ::= decode(String)
-                          | decode(Int, Int, String) // decode(sign, base, value)
-
-    rule H:AltInt => decode(AltInt2String(H))
-
-    rule decode(S) => decode(#if headString(S) ==String "+" #then 1 #else -1 #fi,
-                                #if substrString(S, 2, 3) ==String "x" orBool substrString(S, 2, 3) ==String "X"
-                                    #then 16 #else 8 #fi,
-                                dropString(S, 3))
-        requires headString(S) ==String "+" orBool headString(S) ==String "-"
-    rule decode(S) => decode("+" +String S)                     [owise]
-    rule decode(S, B, V) => S *Int String2Base(V, B)
-endmodule
-
-module DOUBLE-SYNTAX
-    syntax Double ::= r"[+-]?[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?" [token, prec(2)]
-endmodule
-
-module DOUBLE
-    imports DOUBLE-SYNTAX
-    imports STRING
-    imports FLOAT
-
-    syntax String ::= Double2String(Double)                     [function, functional, hook(STRING.token2string)]
-
-    rule D:Double => String2Float(Double2String(D) +String "d")
 endmodule

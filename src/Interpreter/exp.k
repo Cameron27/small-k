@@ -1,0 +1,115 @@
+requires "additional-syntax.k"
+requires "configuration.k"
+requires "../Parser/double.k"
+requires "../Parser/altint.k"
+
+module EXP
+    imports ADDITIONAL-SYNTAX
+    imports CONFIGURATION
+    imports DOUBLE
+    imports ALTINT
+
+    // Evaluate RVal
+    rule reval(E) => #reval(E)
+        requires notBool isDv(E)                                [structural]
+    rule #reval(E:Rv) => reval(E)
+        requires notBool isLoc(E)                               [structural]
+    rule <k> #reval(L) => reval(E) ...</k>
+         <store>... L |-> E ...</store>
+
+    // Read
+    syntax KItem ::= #read(String)
+    rule <k> read => #read("") ...</k>                          [structural]
+    rule #read(S) => replaceAll(replaceAll(S, "\n", ""), "\r", "")
+        requires countAllOccurrences(S, "\n") >Int 0
+    rule <k> #read(S1) => #read(S1 +String S2) ...</k>
+         <in> ListItem(S2:String) => .List ...</in>             [owise]
+
+    // Identifier
+    rule <k> I:Id => E ...</k>
+         <env>... I |-> E ...</env>
+
+    // References Expression
+    context ref HOLE
+    rule <k> ref E:Dv => Loc(!N) ...</k>
+         <store> Store => Store[Loc(!N) <- E] </store>
+
+    // Array Expression
+    context array [ HOLE => reval(HOLE) : _ ]                   [result(Dv)]
+    context array [ _:Dv : HOLE => reval(HOLE) ]                [result(Dv)]
+    syntax KItem ::= createArrayLocs(Array, Int)
+    rule array [ N1:Int : N2:Int ] => createArrayLocs(array(N1, N2, .List), N2 -Int N1 +Int 1)
+        requires N2 >=Int N1                                    [structural]
+    rule <k> createArrayLocs(array(_, _, List => ListItem(Loc(!_N)) List), N => N -Int 1) ...</k>
+        requires N >Int 0
+    rule createArrayLocs(Array, 0) => Array
+
+    // Record
+    syntax KItem ::= createRecordLocs(Record, Ids)
+    rule record ( Is ) => createRecordLocs(record(.Map), Is)    [structural]
+    rule createRecordLocs(record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
+    rule createRecordLocs(Record, .Ids) => Record
+
+    // Function
+    context HOLE:Exp ( _ )
+    context _:Dv ( HOLE )                                       [result(Dvs)]
+    rule <k> func(Is, env(Env'), E) ( Es ) ~> Rest
+                => params(Is, Es) ~> E ~> popE() </k>
+         <env> Env => Env' </env>
+         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
+            requires isDvs(Es)
+
+    // Recursive Function
+    rule recFunc(Is, Env, E) ( Es )
+            => func(Is, Env, E) ( recFunc(Is, Env, E) , Es )    [structural]
+
+    // Ternary operation (if then else)
+    context (HOLE => reval(HOLE)) ? _ : _
+    rule true ? E : _ => E
+    rule false ? _ : E => E
+
+    // Jumpout
+    syntax Dv ::= jump(Int)
+    // enter jumpout
+    rule <k> jumpout I in E ~> Rest => E ~> popE() </k>
+         <env> Env => Env[I <- jump(!N)] </env>
+         <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
+    // resolve incounted call of jump function
+    rule <k> jump(N) ( E:Dv , .Exps ) ~> _ => Env ~> E ~> Rest </k>
+         <stack> ListItem(frame(N, Env, Rest)) => .List ...</stack>
+    // clear stack until correct stack frame is reached
+    rule <k> jump(N) ( _:Dv , .Exps ) ...</k>
+         <stack> ListItem(frame(M, _, _)) => .List ...</stack>
+            requires N =/=Int M                                 [structural]
+
+    // Valof
+    // enter valof
+    rule <k> valof B ~> Rest => B ~> "No return encountered" </k>
+         <env> Env => Env["return" <- !N] </env>
+         <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
+
+    // Contents
+    context cont HOLE
+    rule <k> cont L:Loc => E ...</k>
+         <store>... L |-> E ...</store>
+
+    // Array Access
+    context (HOLE:Exp => reval(HOLE)) [ _ ]                     [result(Dv)]
+    context _:Dv [ HOLE => reval(HOLE) ]                        [result(Dv)]
+    rule array(N1, N2, List) [ N:Int ] => List[N -Int N1] requires N >=Int N1 andBool N <=Int N2
+
+    // Dot
+    context (HOLE => reval(HOLE)) . _
+    rule <k> record(REnv) . E ~> Rest => E ~> popE() </k>
+         <env> Env => updateMap(Env, REnv) </env>
+         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
+
+    // Not
+    context ! (HOLE => reval(HOLE))
+    rule ! B:Bool => notBool B
+
+    // Rules to turn a list of expressions into a list of denotable values
+    context HOLE:Exp , _:Exps
+    context _:Dv , HOLE:Exps
+        requires HOLE =/=K .Exps                                [result(Dvs)]
+endmodule

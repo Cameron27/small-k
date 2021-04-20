@@ -1,5 +1,5 @@
 requires "additional-syntax.k"
-requires "file-operations.k"
+requires "Operations/file-operations.k"
 
 module DEFAULT-ENVIRONMENT
     imports ADDITIONAL-SYNTAX

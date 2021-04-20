@@ -1,5 +1,5 @@
-requires "configuration.k"
-requires "additional-syntax.k"
+requires "../configuration.k"
+requires "../additional-syntax.k"
 
 module FILE-OPERATIONS
     imports CONFIGURATION

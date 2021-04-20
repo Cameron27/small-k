@@ -1,4 +1,4 @@
-requires "small-syntax.k"
+requires "../Parser/small-syntax.k"
 
 module CONFIGURATION
     imports SMALL-SYNTAX
