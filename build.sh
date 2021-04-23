@@ -1,6 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
-echo "Compiling..."
 scriptdir="$(dirname "$0")"
 cd $scriptdir
-kompile -d . "./src/Interpreter/small-interpreter.k" "--gen-glr-bison-parser" "--syntax-module" "SMALL-SYNTAX" $@
+if [[ "$@" != *-ni* ]]
+then
+    echo "Compiling Interpreter..."
+    kompile -d "./out/interpreter" "./src/Interpreter/small-interpreter.k" "--gen-glr-bison-parser" "--syntax-module" "SMALL-SYNTAX" $@
+fi
+if [[ "$@" != *-nt* ]]
+then
+    echo "Compiling Type Checker..."
+    kompile -d "./out/type-checker" "./src/TypeChecker/small-type-checker.k" "--gen-glr-bison-parser" "--syntax-module" "SMALL-SYNTAX" $@
+fi

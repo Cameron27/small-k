@@ -1,7 +1,10 @@
+requires "../Parser/small-syntax.k"
+
 module HELPER
     imports INT
     imports FLOAT
     imports STRING
+    imports SMALL-SYNTAX
 
     // Float to string
     syntax String ::= printFloat(Float)                         [function]
@@ -65,4 +68,14 @@ module HELPER
         requires X ==Int 0
     rule sign(X) => -1
         requires X <Int 0
+
+    // Converts a list of ids and type denotations to a list of ids
+    syntax Ids ::= IdTypeDenos2Ids(IdTypeDenos)                 [function, functional]
+                 | IdTypeDenos2Ids(IdTypeDenos, Ids)            [function, functional]
+                 | IdTypeDenos2Ids(Ids, Ids)                    [function, functional]
+    rule IdTypeDenos2Ids(ITs) => IdTypeDenos2Ids(ITs, .Ids)
+    rule IdTypeDenos2Ids((I : _ , TIs), Is) => IdTypeDenos2Ids(TIs, (I , Is))
+    rule IdTypeDenos2Ids(.IdTypeDenos, Is) => IdTypeDenos2Ids(Is, .Ids)
+    rule IdTypeDenos2Ids((I , Is), Is2) => IdTypeDenos2Ids(Is, (I , Is2))
+    rule IdTypeDenos2Ids(.Ids, Is) => Is
 endmodule

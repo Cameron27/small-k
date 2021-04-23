@@ -11,6 +11,40 @@ module SMALL-SYNTAX
 
     syntax Pgm ::= "program" Block
 
+    syntax Com ::= Exp "=" Exp ";"
+                 | "output" Exp ";"
+                 | Exp "(" Exps ")" ";"
+                 | "if" "(" Exp ")" Com "else" Com
+                 | "if" "(" Exp ")" Com                         [prefer]
+                 | "while" "(" Exp ")" Com
+                 | "repeat" Com "until" "(" Exp ")"
+                 | "for" "(" Id "=" For ")" Com
+                 | "trap" "{" Decs Coms Escs "}"
+                 | "escapeto" Id ";"
+                 | "return" Exp ";"
+                 | "with" Exp "do" Com
+                 | Block
+    syntax Coms ::= List{Com, ""}
+    syntax Esc ::= Id ":" Coms
+    syntax Escs ::= List{Esc, ""}
+
+    syntax Dec ::= "const" Id ":" TypeDeno "=" Exp ";"
+                 | "var" Id ":" TypeDeno "=" Exp ";"
+                 | Own
+                 | "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
+                 | "record" Id "(" IdTypeDenos ")" ";"
+                 | "file" Id "withbuffer" Id ":" TypeDeno ";"
+                 | "proc" Id "(" IdTypeDenos ")" Block
+                 | "rec" "proc" Id "(" IdTypeDenos ")" Block
+                 | "func" Id "(" IdTypeDenos ")" ":" TypeDeno "{" Exp "}"
+                 | "rec" "func" Id "(" IdTypeDenos ")" ":" TypeDeno "{" Exp "}"
+    syntax Own                                                  [locations]
+    syntax Own ::= "own" Id ":" TypeDeno "=" Exp ";"
+    syntax Decs ::= List{Dec, ""}
+    syntax Ids ::= List{Id, ","}
+
+    syntax Block ::= "{" Decs Coms "}"
+
     syntax Exp ::= Int
                  | AltInt
                  | Double
@@ -18,9 +52,9 @@ module SMALL-SYNTAX
                  | String
                  | Id
                  | "read"
-                 | "array" "[" Exp ":" Exp "]"
-                 | "record" "(" Ids ")"
-                 | "valof" Block
+                 | "array" "[" Exp ":" Exp "]" ":" TypeDeno
+                 | "record" "(" IdTypeDenos ")"
+                 | "valof" ":" TypeDeno Block
                  | "(" Exp ")"                                  [bracket]
                  > left:
                    Exp "(" Exps ")"
@@ -53,45 +87,25 @@ module SMALL-SYNTAX
                    Exp "|" Exp
                  > right:
                    Exp "?" Exp ":" Exp
-                 > "jumpout" Id "in" Exp
     syntax Exps ::= List{Exp, ","}
-
-    syntax Com ::= Exp "=" Exp ";"
-                 | "output" Exp ";"
-                 | Exp "(" Exps ")" ";"
-                 | "if" "(" Exp ")" Com "else" Com
-                 | "if" "(" Exp ")" Com                         [prefer]
-                 | "while" "(" Exp ")" Com
-                 | "repeat" Com "until" "(" Exp ")"
-                 | "for" "(" Id "=" For ")" Com
-                 | "trap" "{" Decs Coms Escs "}"
-                 | "escapeto" Id ";"
-                 | "return" Exp ";"
-                 | "with" Exp "do" Com
-                 | Block
-    syntax Coms ::= List{Com, ""}
-    syntax Esc ::= Id ":" Coms
-    syntax Escs ::= List{Esc, ""}
-
-    syntax Dec ::= "const" Id "=" Exp ";"
-                 | "var" Id "=" Exp ";"
-                 | Own
-                 | "array" Id "[" Exp ":" Exp "]" ";"
-                 | "record" Id "(" Ids ")" ";"
-                 | "file" Id "withbuffer" Id ";"
-                 | "proc" Id "(" Ids ")" Block
-                 | "rec" "proc" Id "(" Ids ")" Block
-                 | "func" Id "(" Ids ")" "{" Exp "}"
-                 | "rec" "func" Id "(" Ids ")" "{" Exp "}"
-    syntax Own                                                  [locations]
-    syntax Own ::= "own" Id "=" Exp ";"
-    syntax Decs ::= List{Dec, ""}
-    syntax Ids ::= List{Id, ","}
-
-    syntax Block ::= "{" Decs Coms "}"
 
     syntax For ::= Exp
                  | Exp "while" Exp
                  | Exp "step" Exp "until" Exp
                  | For "," For                                  [left]
+
+    syntax TypeDeno ::= "int"
+                      | "float"
+                      | "bool"
+                      | "string"
+                      | "array" "of" TypeDeno
+                      | "record" "(" IdTypeDenos ")"
+                      | "proc" "(" TypeDenos ")"
+                      | "func" "(" TypeDenos ")" TypeDeno
+                      | "file" TypeDeno
+                      | "ref" TypeDeno
+
+    syntax TypeDenos ::= List{TypeDeno, ","}
+    syntax IdTypeDeno ::= Id ":" TypeDeno
+    syntax IdTypeDenos ::= List{IdTypeDeno, ","}
 endmodule

@@ -13,6 +13,9 @@ module ADDITIONAL-SYNTAX
     syntax Loc ::= Loc(Int)
 
     syntax Env ::= env(Map)
+    // restore environment
+    rule <k> env(Env) => . ...</k>
+         <env> _ => Env </env>
 
     syntax Array ::= array(Int, Int, List)
 
@@ -37,26 +40,25 @@ module ADDITIONAL-SYNTAX
     syntax Exp ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
 
-    // Used only for isDvs, checks all the Exp in Exps are Dvs
+    // used only for isDvs, checks all the Exp in Exps are Dvs
     syntax Dvs
     rule isDvs(E:Exp , Es:Exps) => true
         requires isDv(E) andBool isDvs(Es)
     rule isDvs(.Exps) => true
     rule isDvs(_) => false                                      [owise]
 
-    // Used to pop the stack
     syntax KItem ::= pop()
                    | popE()
+    // used to pop the stack
+    rule <k> pop() => Env ~> Rest </k>
+         <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
     rule <k> E:Dv ~> popE() => Env ~> E ~> Rest </k>
          <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
 
-    rule <k> pop() => Env ~> Rest </k>
-         <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
-
-    // Used to store frame information
+    // used to store frame information
     syntax KItem ::= frame(Int, Env, K)
 
-    // Used to assign a list of parameters to a list of identifiers
+    // used to assign a list of parameters to a list of identifiers
     syntax KItem ::= params(Ids, Exps)
                    | param(Id, Exp)
     // setup params to be assigned last to first

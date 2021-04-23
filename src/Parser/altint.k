@@ -1,3 +1,5 @@
+requires "../Common/helper.k"
+
 module ALTINT-SYNTAX
     syntax AltInt ::= r"[+-]?0[xX][0-9a-fA-F]+"                 [prefer, token, prec(2)]
     syntax AltInt ::= r"[+-]?0[oO][0-7]+"                       [prefer, token, prec(2)]
