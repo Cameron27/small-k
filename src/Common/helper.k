@@ -5,6 +5,7 @@ module HELPER
     imports FLOAT
     imports STRING
     imports SMALL-SYNTAX
+    imports SET
 
     // Float to string
     syntax String ::= printFloat(Float)                         [function]
@@ -70,12 +71,11 @@ module HELPER
         requires X <Int 0
 
     // Converts a list of ids and type denotations to a list of ids
-    syntax Ids ::= IdTypeDenos2Ids(IdTypeDenos)                 [function, functional]
-                 | IdTypeDenos2Ids(IdTypeDenos, Ids)            [function, functional]
-                 | IdTypeDenos2Ids(Ids, Ids)                    [function, functional]
-    rule IdTypeDenos2Ids(ITs) => IdTypeDenos2Ids(ITs, .Ids)
-    rule IdTypeDenos2Ids((I : _ , TIs), Is) => IdTypeDenos2Ids(TIs, (I , Is))
-    rule IdTypeDenos2Ids(.IdTypeDenos, Is) => IdTypeDenos2Ids(Is, .Ids)
-    rule IdTypeDenos2Ids((I , Is), Is2) => IdTypeDenos2Ids(Is, (I , Is2))
-    rule IdTypeDenos2Ids(.Ids, Is) => Is
+    syntax Ids ::= IdTypeDenos2Ids(IdTypeDenos)                 [function]
+    rule IdTypeDenos2Ids((I : _ , TIs)) => I , IdTypeDenos2Ids(TIs)
+    rule IdTypeDenos2Ids(.IdTypeDenos) => .Ids
+
+    // Set equality, not sure if ==K works
+    syntax Bool ::= Set "==Set" Set                             [function, functional]
+    rule S1 ==Set S2 => size(S1) ==Int size(S2) andBool S1 <=Set S2
 endmodule

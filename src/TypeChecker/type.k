@@ -1,4 +1,5 @@
 requires "../Parser/small-syntax.k"
+requires "../Common/helper.k"
 
 module TYPE
     imports SMALL-SYNTAX
@@ -6,6 +7,7 @@ module TYPE
     imports INT
     imports SET
     imports MAP
+    imports HELPER
 
     syntax Type ::= "TInt"
                   | "TDouble"
@@ -36,7 +38,7 @@ module TYPE
     // Type Equality
     syntax Bool ::= Type "==Type" Type                          [function, functional]
     rule TArray T1 ==Type TArray T2 => T1 ==Type T2
-    rule TRecord T1 ==Type TRecord T2 => types(T1) ==Types types(T2)
+    rule TRecord T1 ==Type TRecord T2 => idTypeSet(T1) ==Set idTypeSet(T2)
     rule TProc Ts1 ==Type TProc Ts2 => Ts1 ==Types Ts2
     rule TFunc Ts1 T1 ==Type TFunc Ts2 T2 => Ts1 ==Types Ts2 andBool T1 ==Type T2
     rule TFile T1 ==Type TFile T2 => T1 ==Type T2
@@ -172,6 +174,11 @@ module TYPE
     syntax Set ::= idSet(Ids)                                   [function, functional]
     rule idSet(I , Is) => SetItem(I) idSet(Is)
     rule idSet(.Ids) => .Set
+
+    // IdTypes to IdType Set
+    syntax Set ::= idTypeSet(IdTypes)                           [function]
+    rule idTypeSet(IT ,, ITs) => SetItem(IT) idTypeSet(ITs)
+    rule idTypeSet(.IdTypes) => .Set
 
     // Size of Ids
     syntax Int ::= size(Ids)                                    [function, functional]
