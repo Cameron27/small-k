@@ -1,6 +1,6 @@
-requires "configuration.k"
+requires "../configuration.k"
 requires "additional-syntax.k"
-requires "default-environment.k"
+requires "../Features/default-environment.k"
 
 module DEC
     imports CONFIGURATION

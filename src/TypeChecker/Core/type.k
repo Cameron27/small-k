@@ -1,5 +1,5 @@
-requires "../Parser/small-syntax.k"
-requires "../Common/helper.k"
+requires "../../Parser/small-syntax.k"
+requires "../../Common/helper.k"
 
 module TYPE
     imports SMALL-SYNTAX

@@ -1,5 +1,5 @@
 requires "../Parser/small-syntax.k"
-requires "type.k"
+requires "Core/type.k"
 
 module CONFIGURATION
     imports SMALL-SYNTAX

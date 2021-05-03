@@ -1,4 +1,4 @@
-requires "configuration.k"
+requires "../configuration.k"
 requires "additional-syntax.k"
 
 module EXP

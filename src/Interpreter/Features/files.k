@@ -1,5 +1,15 @@
 requires "../configuration.k"
-requires "../additional-syntax.k"
+requires "../Core/additional-syntax.k"
+
+module FILES
+    imports CONFIGURATION
+    imports ADDITIONAL-SYNTAX
+
+    // File
+    rule <k> file F withbuffer B : _ ; => . ...</k>
+         <env> Env => Env[B <- Loc(!B)][F <- Loc(!F)] </env>
+         <store> Store => Store[Loc(!F) <- file(.List, 1, Loc(!B))] </store>
+endmodule
 
 module FILE-OPERATIONS
     imports CONFIGURATION

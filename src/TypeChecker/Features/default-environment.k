@@ -1,4 +1,4 @@
-requires "type.k"
+requires "../Core/type.k"
 
 module DEFAULT-ENVIRONMENT
     imports TYPE

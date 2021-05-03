@@ -1,9 +1,9 @@
-requires "com.k"
-requires "dec.k"
-requires "exp.k"
-requires "operations.k"
-requires "type-deno.k"
-requires "default-environment.k"
+requires "Core/com.k"
+requires "Core/dec.k"
+requires "Core/exp.k"
+requires "Features/operations.k"
+requires "Core/type-deno.k"
+requires "Features/default-environment.k"
 
 module SMALL-TYPE-CHECKER
     imports COM

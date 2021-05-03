@@ -1,13 +1,15 @@
 requires "additional-syntax.k"
-requires "configuration.k"
-requires "../Parser/double.k"
-requires "../Parser/altint.k"
+requires "../configuration.k"
+requires "../../Parser/double.k"
+requires "../../Parser/altint.k"
+requires "../helper.k"
 
 module EXP
     imports ADDITIONAL-SYNTAX
     imports CONFIGURATION
     imports DOUBLE
     imports ALTINT
+    imports INTERPRETER-HELPER
 
     // Evaluate RVal
     rule reval(E) => #reval(E)
@@ -46,7 +48,6 @@ module EXP
     rule createRecordLocs(Record, .Ids) => Record
 
     // Valof
-    // enter valof
     rule <k> valof : _ B ~> Rest => B ~> "No return encountered" </k>
          <env> Env => Env["return" <- !N] </env>
          <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>

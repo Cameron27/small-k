@@ -1,5 +1,5 @@
-requires "../Parser/small-syntax.k"
-requires "configuration.k"
+requires "../../Parser/small-syntax.k"
+requires "../configuration.k"
 requires "type.k"
 
 module ADDITIONAL-SYNTAX

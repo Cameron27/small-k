@@ -1,7 +1,8 @@
 requires "additional-syntax.k"
-requires "configuration.k"
-requires "default-environment.k"
-requires "../Common/helper.k"
+requires "../configuration.k"
+requires "../Features/default-environment.k"
+requires "../../Common/helper.k"
+requires "../helper.k"
 
 module DEC
     imports ADDITIONAL-SYNTAX
@@ -9,6 +10,7 @@ module DEC
     imports DEFAULT-ENVIRONMENT
     imports K-LOCATIONS
     imports HELPER
+    imports INTERPRETER-HELPER
 
     // Constants
     context const _ : _ = (HOLE => reval(HOLE)) ;
@@ -59,11 +61,6 @@ module DEC
     rule createRecordLocs(_, record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
     rule <k> createRecordLocs(I, Record:Record, .Ids) => . ...</k>
          <env> Env => Env[I <- Record] </env>
-
-    // File
-    rule <k> file F withbuffer B : _ ; => . ...</k>
-         <env> Env => Env[B <- Loc(!B)][F <- Loc(!F)] </env>
-         <store> Store => Store[Loc(!F) <- file(.List, 1, Loc(!B))] </store>
 
     // Procedure
     rule <k> proc I(ITs) C => . ...</k>

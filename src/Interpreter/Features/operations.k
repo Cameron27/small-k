@@ -1,4 +1,4 @@
-requires "../additional-syntax.k"
+requires "../Core/additional-syntax.k"
 
 module OPERATIONS
     imports ADDITIONAL-SYNTAX

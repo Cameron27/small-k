@@ -1,10 +1,7 @@
-requires "../Parser/small-syntax.k"
-
 module HELPER
     imports INT
     imports FLOAT
     imports STRING
-    imports SMALL-SYNTAX
     imports SET
 
     // Float to string
@@ -62,6 +59,7 @@ module HELPER
     syntax String ::= headString(String)                        [function, functional]
     rule headString(S) => substrString(S, 0, 1)
 
+    // Get sign of an int
     syntax Int ::= sign(Int)                                    [function, functional]
     rule sign(X) => 1
         requires X >Int 0
@@ -69,11 +67,6 @@ module HELPER
         requires X ==Int 0
     rule sign(X) => -1
         requires X <Int 0
-
-    // Converts a list of ids and type denotations to a list of ids
-    syntax Ids ::= IdTypeDenos2Ids(IdTypeDenos)                 [function]
-    rule IdTypeDenos2Ids((I : _ , TIs)) => I , IdTypeDenos2Ids(TIs)
-    rule IdTypeDenos2Ids(.IdTypeDenos) => .Ids
 
     // Set equality, not sure if ==K works
     syntax Bool ::= Set "==Set" Set                             [function, functional]
