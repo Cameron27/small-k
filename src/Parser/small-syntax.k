@@ -1,7 +1,7 @@
 requires "double.k"
 requires "altint.k"
 
-module SMALL-SYNTAX
+module SMALL-SYNTAX-BASE
     imports ID-SYNTAX
     imports ALTINT-SYNTAX
     imports DOUBLE-SYNTAX
@@ -108,4 +108,23 @@ module SMALL-SYNTAX
     syntax TypeDenos ::= List{TypeDeno, ","}
     syntax IdTypeDeno ::= Id ":" TypeDeno
     syntax IdTypeDenos ::= List{IdTypeDeno, ","}
+endmodule
+
+module SMALL-SYNTAX
+    imports SMALL-SYNTAX-BASE
+
+    syntax Com ::= "trap" Com Escs
+                 | "Skip"
+
+    // Simplifications to syntax to reduce number of cases
+
+    // If Then to If Then Else
+    rule if ( E ) C => if ( E ) C else Skip                     [anywhere]
+
+    // Array and Record Declarations to Constant Declarations
+    rule array I [ E1 : E2 ] : T ; => const I : array of T = array [ E1 : E2 ] : T ;    [anywhere]
+    rule record I ( ITs ) ; => const I : record ( ITs ) = record ( ITs ) ;  [anywhere]
+
+    // Remove trap's awkward syntax required to force the correct formatting
+    rule trap { Decs Coms Escs } => trap { Decs Coms } Escs     [anywhere]
 endmodule

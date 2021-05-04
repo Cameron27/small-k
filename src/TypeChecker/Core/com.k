@@ -27,9 +27,7 @@ module COM
         requires Ts1 ==Types Ts2
 
     // If
-    context if ( (HOLE => reval(HOLE)) ) _
     context if ( (HOLE => reval(HOLE)) ) _ else _
-    rule if ( TBool ) C => C
     rule if ( TBool ) C1 else C2 => C1 ~> C2
 
     // While
@@ -66,7 +64,7 @@ module COM
         requires T1 ==K T2
 
     // Trap
-    rule <k> trap { Ds Cs Escs } => Ds ~> Cs ~> tenv(TEnv) ~> Escs ...</k>
+    rule <k> trap C Escs => C ~> tenv(TEnv) ~> Escs ...</k>
          <tenv> TEnv => updateMap(TEnv, map(Escs)) </tenv>
     rule Esc:Esc Escs => Esc ~> Escs                            [structural]
     rule .Escs => .                                             [structural]
@@ -92,4 +90,7 @@ module COM
     // Chain
     rule C:Com Cs:Coms => C ~> Cs                               [structural]
     rule .Coms => .                                             [structural]
+
+    // Skip
+    rule Skip => .                                              [structural]
 endmodule

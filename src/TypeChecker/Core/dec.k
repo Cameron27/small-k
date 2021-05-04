@@ -31,20 +31,6 @@ module DEC
          <tenv> _ => TEnv[I <- refer(T1)] </tenv>
             requires T1 ==Type T2 andBool refer(T1) =/=K TError
 
-    // Array
-    context array _ [ (HOLE => reval(HOLE)) : _ ] : _ ;
-    context array _ [ _ : (HOLE => reval(HOLE)) ] : _ ;
-    context array _ [ _ : _ ] : HOLE ;
-    rule <k> array I [ N1 : N2 ] : T ; => . ...</k>
-         <tenv> TEnv => TEnv[I <- TArray refer(T)] </tenv>
-            requires N1 ==Type TInt andBool N2 ==Type TInt andBool refer(T) =/=K TError
-
-    // Record
-    context record _ ( HOLE ) ;                                 [result(IdTypes)]
-    rule <k> record I ( ITs ) ; => . ...</k>
-         <tenv> TEnv => TEnv[I <- TRecord referAll(ITs)] </tenv>
-            requires allDifferent(ids(ITs)) andBool referAll(ITs) =/=K ITError
-
     // File
     context file _ withbuffer _ : HOLE ;
     rule <k> file I1 withbuffer I2 : T ; => . ...</k>

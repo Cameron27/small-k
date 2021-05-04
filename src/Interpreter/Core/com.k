@@ -40,9 +40,6 @@ module COM
             => proc(Is, Env, C) ( recProc(Is, Env, C) , Es ) ;  [structural]
 
     // If
-    context if ( HOLE => reval(HOLE) ) _
-    rule if ( true ) C => C
-    rule if ( false ) _ => .
     context if ( HOLE => reval(HOLE) ) _ else _
     rule if ( true ) C else _ => C
     rule if ( false ) _ else C => C
@@ -57,7 +54,7 @@ module COM
     syntax KItem ::= escs(Escs, Int)
                    | esc(Esc, Int)
     // enter trap
-    rule <k> trap { Ds Cs Escs } ~> Rest => escs(Escs, !N) ~> { Ds Cs } ~> pop() </k>
+    rule <k> trap C Escs ~> Rest => escs(Escs, !N) ~> C ~> pop() </k>
          <env> Env </env>
          <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
     // setup traps to be assigned last to first
@@ -102,4 +99,7 @@ module COM
 
     rule C:Com Cs:Coms => C ~> Cs                               [structural]
     rule .Coms => .                                             [structural]
+
+    // Skip
+    rule Skip => .                                              [structural]
 endmodule
