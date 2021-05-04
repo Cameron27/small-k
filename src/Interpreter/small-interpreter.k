@@ -3,7 +3,7 @@ requires "Core/dec.k"
 requires "Core/exp.k"
 requires "Features/operations.k"
 requires "Features/files.k"
-requires "Features/for.k"
+requires "../Parser/small-syntax.k"
 
 module SMALL-INTERPRETER
     imports COM
@@ -11,7 +11,7 @@ module SMALL-INTERPRETER
     imports EXP
     imports OPERATIONS
     imports FILES
-    imports FOR
+    imports SMALL-SYNTAX-CONVERSION
 
     // run program
     rule <k> program C => C </k>

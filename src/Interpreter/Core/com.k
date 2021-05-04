@@ -45,7 +45,7 @@ module COM
     rule if ( false ) _ else C => C
 
     // While
-    rule while (E) C => if (E) { .Decs C while (E) C }          [structural]
+    rule while (E) C => if (E) (C ; while (E) C)                [structural]
 
     // Repeat
     rule repeat C until ( E ) =>  C ~> if (! E) repeat C until (E)  [structural]
@@ -58,11 +58,11 @@ module COM
          <env> Env </env>
          <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
     // setup traps to be assigned last to first
-    rule <k> escs((I : Cs Escs), N) => escs(Escs, N) ~> esc(I : Cs, N) ...</k>  [structural]
+    rule <k> escs((I :: Cs Escs), N) => escs(Escs, N) ~> esc(I :: Cs, N) ...</k>    [structural]
     rule escs(.Escs, _) => .                                    [structural]
     // add lables to environment
-    syntax KItem ::= trapLabel(Coms, Int)
-    rule <k> esc(I : Cs, N) => . ...</k>
+    syntax KItem ::= trapLabel(Com, Int)
+    rule <k> esc(I :: Cs, N) => . ...</k>
          <env> Env => Env[I <- trapLabel(Cs, N)] </env>
     // resolve an encountered escapeto
     rule <k> escapeto I ; ~> _ => Env ~> Cs ~> Rest </k>
@@ -93,12 +93,15 @@ module COM
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
 
     // Block
-    rule <k> { D:Decs C:Coms } ~> Rest => D ~> C ~> pop() </k>
+    rule { } => { SkipDec ; Skip }
+    rule { D:Dec } => { D ; Skip }
+    rule { C:Com } => { SkipDec ; C }
+    rule <k> { D:Dec ; C:Com } ~> Rest => D ~> C ~> pop() </k>
          <env> Env </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>   [structural]
 
-    rule C:Com Cs:Coms => C ~> Cs                               [structural]
-    rule .Coms => .                                             [structural]
+    // Chain
+    rule C1:Com ; C2 => C1 ~> C2                                [structural]
 
     // Skip
     rule Skip => .                                              [structural]

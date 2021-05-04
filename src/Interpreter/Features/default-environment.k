@@ -1,15 +1,23 @@
 requires "../Core/additional-syntax.k"
+requires "../../Common/helper.k"
 requires "files.k"
 
 module DEFAULT-ENVIRONMENT
     imports ADDITIONAL-SYNTAX
     imports FILE-OPERATIONS
+    imports HELPER
 
     syntax Map ::= defaultEnvironment()                         [function]
     rule defaultEnvironment() =>
+        $sign |-> func(!E , .Ids, env(.Map), $signf(!E))
         String2Id("reset") |-> proc(!E , .Ids, env(.Map), reset(!E))
         String2Id("rewrite") |-> proc(!E , .Ids, env(.Map), rewrite(!E))
         String2Id("get") |-> proc(!E , .Ids, env(.Map), get(!E))
         String2Id("put") |-> proc(!E , .Ids, env(.Map), put(!E))
         String2Id("eof") |-> func(!E , .Ids, env(.Map), eof(!E))
+
+    // Sign function
+    syntax Exp ::= "$signf" "(" Id ")"
+    rule <k> $signf(I) => sign(N) ...</k>
+         <env>... I |-> N ...</env>
 endmodule

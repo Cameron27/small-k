@@ -22,6 +22,12 @@ module DEC
          <tenv> TEnv => TEnv[I <- refer(T1)] </tenv>
             requires T1 ==Type T2 andBool refer(T1) =/=K TError
 
+    // Untyped Variable
+    context var _ = (HOLE => reval(HOLE)) ;
+    rule <k> var I = T ; => . ...</k>
+         <tenv> TEnv => TEnv[I <- refer(T)] </tenv>
+            requires refer(T) =/=K TError
+
     // Own
     context own _ : HOLE = _ ;
     context own _ : _ = (HOLE => reval(HOLE)) ;
@@ -63,6 +69,8 @@ module DEC
          <tenv> TEnv => updateMap(TEnv, map( I : TFunc types(ITs) T ,, ITs)) </tenv>
 
     // Chain
-    rule D:Dec Ds:Decs => D ~> Ds                               [structural]
-    rule .Decs => .                                             [structural]
+    rule D1:Dec ; D2 => D1 ~> D2                                [structural]
+
+    // Skip
+    rule SkipDec => .
 endmodule

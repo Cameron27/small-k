@@ -1,9 +1,10 @@
 requires "Core/com.k"
 requires "Core/dec.k"
 requires "Core/exp.k"
-requires "Features/operations.k"
 requires "Core/type-deno.k"
+requires "Features/operations.k"
 requires "Features/default-environment.k"
+requires "../Parser/small-syntax.k"
 
 module SMALL-TYPE-CHECKER
     imports COM
@@ -14,6 +15,7 @@ module SMALL-TYPE-CHECKER
     imports DEFAULT-ENVIRONMENT
     imports BOOL
     imports INT
+    imports SMALL-SYNTAX-CONVERSION
 
     // run program
     rule <k> program C => C </k>

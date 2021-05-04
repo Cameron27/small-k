@@ -12,14 +12,20 @@ module DEC
     imports HELPER
     imports INTERPRETER-HELPER
 
-    // Constants
+    // Constant
     context const _ : _ = (HOLE => reval(HOLE)) ;
     rule <k> const I : _ = E:Rv ; => . ...</k>
          <env> Env => Env[I <- E] </env>
 
-    // Variables
+    // Variable
     context var _ : _ = (HOLE => reval(HOLE)) ;
     rule <k> var I : _ = E:Rv ; => . ...</k>
+         <env> Env => Env[I <- Loc(!N)] </env>
+         <store> Store => Store[Loc(!N) <- E] </store>
+
+    // Untyped Variable
+    context var _ = (HOLE => reval(HOLE)) ;
+    rule <k> var I = E:Rv ; => . ...</k>
          <env> Env => Env[I <- Loc(!N)] </env>
          <store> Store => Store[Loc(!N) <- E] </store>
 
@@ -60,6 +66,9 @@ module DEC
     rule <k> rec func I(ITs) : _ { E } => . ...</k>
          <env> Env => Env[I <- recFunc(I , IdTypeDenos2Ids(ITs), env(Env), E)] </env>   [structural]
 
-    rule D:Dec Ds:Decs => D ~> Ds                               [structural]
-    rule .Decs => .                                             [structural]
+    // Chain
+    rule D1:Dec ; D2 => D1 ~> D2                                [structural]
+
+    // Skip
+    rule SkipDec => .
 endmodule
