@@ -134,9 +134,10 @@ module SMALL-SYNTAX
                    | "{" Com "}"
                    | "{" "}"
 
-    syntax Dec ::= "var" Id "=" Exp ";" //TODO: remove this maybe
-                 | "SkipDec"
+    syntax Dec ::= "SkipDec"
                  | Dec ";" Dec                                  [right]
+
+    syntax TypeDeno ::= typeInfer(Exp)
 endmodule
 
 // Applies various conversions to go from the parsed syntax to the extended syntax
@@ -155,10 +156,10 @@ module SMALL-SYNTAX-CONVERSION
     // Remove trap's awkward syntax required to force the correct formatting
     rule trap { Ds Cs Escs } => trap { Ds Cs } Escs             [anywhere]
 
-    // For
+    // Convert for loops to other forms
     rule for ( I = E:Exp ) C => I = E ; ; C                     [anywhere]
     rule for ( I = E1 while E2 ) C => {
-        var $1 = E1 ; ;
+        var $1: typeInfer(E1) = E1 ; ;
         while (E2) (
             I = $1 ; ;
             C ;

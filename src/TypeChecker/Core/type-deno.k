@@ -34,4 +34,8 @@ module TYPE-DENO
     // Reference
     context (ref HOLE):TypeDeno
     rule (ref T:Type):TypeDeno => TRef T
+
+    // Type Infer
+    context typeInfer(HOLE => reval(HOLE))
+    rule typeInfer(T:Type) => T
 endmodule

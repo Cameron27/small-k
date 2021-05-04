@@ -23,12 +23,6 @@ module DEC
          <env> Env => Env[I <- Loc(!N)] </env>
          <store> Store => Store[Loc(!N) <- E] </store>
 
-    // Untyped Variable
-    context var _ = (HOLE => reval(HOLE)) ;
-    rule <k> var I = E:Rv ; => . ...</k>
-         <env> Env => Env[I <- Loc(!N)] </env>
-         <store> Store => Store[Loc(!N) <- E] </store>
-
     // Own
     syntax Dec ::= own(Id, FileLoc, Exp)
     syntax KItem ::= evalOwn(FileLoc, Exp)
