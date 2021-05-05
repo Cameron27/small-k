@@ -11,12 +11,13 @@ module ALTINT
     imports STRING
     imports HELPER
 
+    syntax Int ::= AltInt2Int(AltInt)                           [function, functional]
+    rule AltInt2Int(AI) => decode(AltInt2String(AI))
+
     syntax String ::= AltInt2String(AltInt)                     [function, functional, hook(STRING.token2string)]
 
-    syntax KItem ::= decode(String)
-                   | decode(Int, Int, String) // decode(sign, base, value)
-
-    rule H:AltInt => decode(AltInt2String(H))
+    syntax Int ::= decode(String)                               [function]
+                 | decode(Int, Int, String) /* decode(sign, base, value) */ [function]
 
     rule decode(S) => decode(#if headString(S) ==String "+" #then 1 #else -1 #fi,
                                 #if substrString(S, 2, 3) ==String "x" orBool substrString(S, 2, 3) ==String "X"

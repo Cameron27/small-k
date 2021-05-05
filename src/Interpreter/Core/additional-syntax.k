@@ -9,6 +9,7 @@ module ADDITIONAL-SYNTAX
     imports STRING
     imports ID
     imports CONFIGURATION
+    imports MINT
 
     syntax Loc ::= Loc(Int)
 
@@ -17,7 +18,7 @@ module ADDITIONAL-SYNTAX
     rule <k> env(Env) => . ...</k>
          <env> _ => Env </env>
 
-    syntax Array ::= array(Int, Int, List)
+    syntax Array ::= array(MInt{64}, MInt{64}, List)
 
     syntax Record ::= record(Map)
 
@@ -29,7 +30,7 @@ module ADDITIONAL-SYNTAX
 
     syntax File ::= file(List, Int, Loc)
 
-    syntax Rv ::= Int | Float | Bool | String | Loc | Array | Record
+    syntax Rv ::= MInt{64} | Float | Bool | String | Loc | Array | Record
 
     syntax Dv ::= Rv | Proc | Func | File
 

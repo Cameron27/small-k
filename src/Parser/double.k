@@ -7,7 +7,9 @@ module DOUBLE
     imports STRING
     imports FLOAT
 
-    syntax String ::= Double2String(Double)                     [function, functional, hook(STRING.token2string)]
+    syntax Float ::= Double2Float(Double)                       [function, functional]
 
-    rule D:Double => String2Float(Double2String(D) +String "d")
+    rule Double2Float(D) => String2Float(Double2String(D) +String "d")
+
+    syntax String ::= Double2String(Double)                     [function, functional, hook(STRING.token2string)]
 endmodule

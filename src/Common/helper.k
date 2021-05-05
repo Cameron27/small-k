@@ -3,6 +3,7 @@ module HELPER
     imports FLOAT
     imports STRING
     imports SET
+    imports MINT
 
     // Float to string
     syntax String ::= printFloat(Float)                         [function]
@@ -60,13 +61,14 @@ module HELPER
     rule headString(S) => substrString(S, 0, 1)
 
     // Get sign of an int
-    syntax Int ::= sign(Int)                                    [function, functional]
-    rule sign(X) => 1
-        requires X >Int 0
-    rule sign(X) => 0
-        requires X ==Int 0
-    rule sign(X) => -1
-        requires X <Int 0
+    syntax MInt{64}
+    syntax MInt{64} ::= sign(MInt{64})                          [function, functional]
+    rule sign(X) => 1p64
+        requires X >sMInt 0p64
+    rule sign(X) => 0p64
+        requires X ==MInt 0p64
+    rule sign(X) => -1p64
+        requires X <sMInt 0p64
 
     // Set equality, not sure if ==K works
     syntax Bool ::= Set "==Set" Set                             [function, functional]

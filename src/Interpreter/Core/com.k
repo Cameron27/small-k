@@ -15,6 +15,8 @@ module COM
 
     // Output
     context output (HOLE => reval(HOLE)) ;
+    rule <k> output E:MInt{64} ; => . ...</k>
+         <out> List => List ListItem(MInt2Signed(E)) ListItem("\n") </out>
     rule <k> output E:Float ; => . ...</k>
          <out> List => List ListItem(printFloat(E)) ListItem("\n") </out>
     rule <k> output Loc(I) ; => . ...</k>

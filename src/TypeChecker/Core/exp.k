@@ -16,9 +16,8 @@ module EXP
         requires isRv(T)                                        [owise]
 
     // Basic Types
-    rule _:Int => TInt
-    rule _:AltInt => TInt
-    rule _:Double => TDouble
+    rule _:MInt{64} => TInt
+    rule _:Float => TDouble
     rule _:Bool => TBool
     rule _:String => TString
 

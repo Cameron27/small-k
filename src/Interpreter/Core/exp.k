@@ -7,8 +7,6 @@ requires "../helper.k"
 module EXP
     imports ADDITIONAL-SYNTAX
     imports CONFIGURATION
-    imports DOUBLE
-    imports ALTINT
     imports INTERPRETER-HELPER
 
     // Evaluate RVal
@@ -35,8 +33,8 @@ module EXP
     context array [ HOLE => reval(HOLE) : _ ] : _               [result(Dv)]
     context array [ _:Dv : HOLE => reval(HOLE) ] : _            [result(Dv)]
     syntax KItem ::= createArrayLocs(Array, Int)
-    rule array [ N1:Int : N2:Int ] : _ => createArrayLocs(array(N1, N2, .List), N2 -Int N1 +Int 1)
-        requires N2 >=Int N1                                    [structural]
+    rule array [ N1:MInt{64} : N2:MInt{64} ] : _ => createArrayLocs(array(N1, N2, .List), MInt2Signed(N2) -Int MInt2Signed(N1) +Int 1)
+        requires N2 >=sMInt N1                                  [structural]
     rule <k> createArrayLocs(array(_, _, List => ListItem(Loc(!_N)) List), N => N -Int 1) ...</k>
         requires N >Int 0
     rule createArrayLocs(Array, 0) => Array
@@ -74,7 +72,7 @@ module EXP
     // Array Access
     context (HOLE:Exp => reval(HOLE)) [ _ ]                     [result(Dv)]
     context _:Dv [ HOLE => reval(HOLE) ]                        [result(Dv)]
-    rule array(N1, N2, List) [ N:Int ] => List[N -Int N1] requires N >=Int N1 andBool N <=Int N2
+    rule array(N1, N2, List) [ N:MInt{64} ] => List[MInt2Signed(N -MInt N1)] requires N >=sMInt N1 andBool N <=sMInt N2
 
     // Contents
     context cont HOLE

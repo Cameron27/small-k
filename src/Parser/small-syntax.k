@@ -4,8 +4,6 @@ requires "altint.k"
 // Syntax that is common to the parsed and the extended syntax
 module SMALL-SYNTAX-COMMON
     imports ID-SYNTAX
-    imports ALTINT-SYNTAX
-    imports DOUBLE-SYNTAX
     imports STRING-SYNTAX
     imports INT-SYNTAX
     imports BOOL-SYNTAX
@@ -39,10 +37,7 @@ module SMALL-SYNTAX-COMMON
     syntax Own ::= "own" Id ":" TypeDeno "=" Exp ";"
     syntax Ids ::= List{Id, ","}
 
-    syntax Exp ::= Int
-                 | AltInt
-                 | Double
-                 | Bool
+    syntax Exp ::= Bool
                  | String
                  | Id
                  | "read"
@@ -102,6 +97,8 @@ endmodule
 // Syntax additional to the common syntax to complete the parsed syntax
 module SMALL-SYNTAX-PARSED
     imports SMALL-SYNTAX-COMMON
+    imports ALTINT-SYNTAX
+    imports DOUBLE-SYNTAX
 
     syntax Com ::= "trap" "{" Decs Coms Escs "}"
                  | "for" "(" Id "=" For ")" Com
@@ -117,11 +114,17 @@ module SMALL-SYNTAX-PARSED
     syntax Dec ::= "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
                  | "record" Id "(" IdTypeDenos ")" ";"
     syntax Decs ::= List{Dec, ""}
+
+    syntax Exp ::= Int
+                 | AltInt
+                 | Double
 endmodule
 
 // Syntax additional to the common syntax to complete the extended syntax
 module SMALL-SYNTAX
     imports SMALL-SYNTAX-COMMON
+    imports FLOAT-SYNTAX
+    imports MINT-SYNTAX
 
     syntax Id ::= "$1" | "$2" | "$3" | "$sign"
 
@@ -137,6 +140,10 @@ module SMALL-SYNTAX
     syntax Dec ::= "SkipDec"
                  | Dec ";" Dec                                  [right]
 
+    syntax Exp ::= MInt{64}
+                 | Float
+    syntax MInt{64}
+
     syntax TypeDeno ::= typeInfer(Exp)
 endmodule
 
@@ -145,6 +152,9 @@ module SMALL-SYNTAX-CONVERSION
     imports SMALL-SYNTAX
     imports SMALL-SYNTAX-PARSED
     imports K-EQUAL
+    imports ALTINT
+    imports DOUBLE
+    imports MINT
 
     // If Then to If Then Else
     rule if ( E ) C => if ( E ) C else Skip                     [anywhere]
@@ -192,4 +202,13 @@ module SMALL-SYNTAX-CONVERSION
     rule convert(.Coms) => Skip
     rule convert(D:Dec Ds) => D ; convert(Ds)
     rule convert(.Decs) => SkipDec
+
+    // Convert alt-ints to ints
+    rule AI:AltInt => AltInt2Int(AI)
+
+    // Convert doubles to floats
+    rule D:Double => Double2Float(D)
+
+    // Convert ints to int32s
+    rule I:Int => Int2MInt(I)::MInt{64}
 endmodule
