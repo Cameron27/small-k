@@ -74,6 +74,16 @@ module EXP
     context ! (HOLE => reval(HOLE))
     rule ! TBool => TBool
 
+    // Positive
+    context + (HOLE => reval(HOLE))
+    rule + TInt => TInt
+    rule + TFloat => TFloat
+
+    // Negitive
+    context - (HOLE => reval(HOLE))
+    rule - TInt => TInt
+    rule - TFloat => TFloat
+
     // Ternary (if then else)
     context (HOLE => reval(HOLE)) ? _ : _
     context _ ? HOLE : _

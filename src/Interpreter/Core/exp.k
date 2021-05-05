@@ -88,6 +88,16 @@ module EXP
     context ! (HOLE => reval(HOLE))
     rule ! B:Bool => notBool B
 
+    // Positive
+    context + (HOLE => reval(HOLE))
+    rule + N:MInt{64} => N
+    rule + N:Float => N
+
+    // Negitive
+    context - (HOLE => reval(HOLE))
+    rule - N:MInt{64} => --MInt N
+    rule - N:Float => --Float N
+
     // Ternary Operation (if then else)
     context (HOLE => reval(HOLE)) ? _ : _
     rule true ? E : _ => E

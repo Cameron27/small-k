@@ -5,7 +5,7 @@ requires "altint.k"
 module SMALL-SYNTAX-COMMON
     imports ID-SYNTAX
     imports STRING-SYNTAX
-    imports INT-SYNTAX
+    imports UNSIGNED-INT-SYNTAX
     imports BOOL-SYNTAX
 
     syntax Pgm ::= "program" Block
@@ -53,6 +53,8 @@ module SMALL-SYNTAX-COMMON
                  > "cont" Exp
                  | "ref" Exp
                  | "!" Exp
+                 | "+" Exp
+                 | "-" Exp
                  > left:
                    Exp "*" Exp
                  | Exp "/" Exp

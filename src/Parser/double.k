@@ -1,5 +1,5 @@
 module DOUBLE-SYNTAX
-    syntax Double ::= r"[+-]?[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?" [token, prec(2)]
+    syntax Double ::= r"[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?"      [token, prec(2)]
 endmodule
 
 module DOUBLE
