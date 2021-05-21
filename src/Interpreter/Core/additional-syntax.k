@@ -14,9 +14,14 @@ module ADDITIONAL-SYNTAX
     syntax Loc ::= Loc(Int)
 
     syntax Env ::= env(Map)
+                 | env(Map, Object)
     // restore environment
     rule <k> env(Env) => . ...</k>
          <env> _ => Env </env>
+    rule <k> env(Env, obj(This)) => . ...</k>
+         <env> _ => Env </env>
+         <this> _ => This </this>
+
 
     syntax Array ::= array(MInt{64}, MInt{64}, List)
 
@@ -24,15 +29,24 @@ module ADDITIONAL-SYNTAX
 
     syntax Proc ::= proc(Ids, Env, Com)
                   | recProc(Ids, Env, Com)
+                  | methodProc(Ids, Env, Com, Object)
 
     syntax Func ::= func(Ids, Env, Exp)
                   | recFunc(Ids, Env, Exp)
+                  | methodFunc(Ids, Env, Exp, Object)
 
     syntax File ::= file(List, Int, Loc)
 
-    syntax Rv ::= MInt{64} | Float | Bool | String | Loc | Array | Record
+    syntax Class ::= class(Id, Dec, Env)
 
-    syntax Dv ::= Rv | Proc | Func | File
+    syntax Object ::= obj(Map) | Null
+
+    syntax Method ::= method(Proc)
+                    | method(Func)
+
+    syntax Rv ::= MInt{64} | Float | Bool | String | Loc | Array | Record | Object | Null
+
+    syntax Dv ::= Rv | Proc | Func | Class | File
 
     syntax Exp ::= Dv
 
@@ -48,11 +62,13 @@ module ADDITIONAL-SYNTAX
     rule isDvs(.Exps) => true
     rule isDvs(_) => false                                      [owise]
 
-    syntax KItem ::= pop()
-                   | popE()
     // used to pop the stack
+    syntax KItem ::= pop()
     rule <k> pop() => Env ~> Rest </k>
          <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
+
+    // used to pop the stack keeping the denotable value in front
+    syntax KItem ::= popE()
     rule <k> E:Dv ~> popE() => Env ~> E ~> Rest </k>
          <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
 

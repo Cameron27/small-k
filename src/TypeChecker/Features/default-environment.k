@@ -12,4 +12,5 @@ module DEFAULT-ENVIRONMENT
         String2Id("get") |-> TProc TRef TFileAny
         String2Id("put") |-> TProc TRef TFileAny
         String2Id("eof") |-> TFunc TRef TFileAny TBool
+        String2Id("isNull") |-> TFunc (TUnion (TRef TObjectAny ,, TObjectAny) ,, .Types) TBool
 endmodule

@@ -1,6 +1,7 @@
 requires "Core/com.k"
 requires "Core/dec.k"
 requires "Core/exp.k"
+requires "Features/classes.k"
 requires "Features/operations.k"
 requires "Features/files.k"
 requires "../Parser/small-syntax.k"
@@ -9,6 +10,7 @@ module SMALL-INTERPRETER
     imports COM
     imports DEC
     imports EXP
+    imports CLASSES
     imports OPERATIONS
     imports FILES
     imports SMALL-SYNTAX-CONVERSION

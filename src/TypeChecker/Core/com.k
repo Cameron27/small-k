@@ -24,7 +24,7 @@ module COM
     context HOLE:Exp ( _:Exps ) ;
     context _:Exp ( HOLE:Exps ) ;                               [result(Types)]
     rule TProc Ts1 ( Ts2 ) ; => .
-        requires Ts1 ==Types Ts2
+        requires Ts2 <=Types Ts1
 
     // If
     context if ( (HOLE => reval(HOLE)) ) _ else _
@@ -55,7 +55,7 @@ module COM
     context return (HOLE => reval(HOLE)) ;
     rule <k> return T1 ; => . ...</k>
          <returnType> T2 </returnType>
-            requires T1 ==Type T2
+            requires T1 <=Type T2
 
     // With Do
     context with (HOLE => reval(HOLE)) do _

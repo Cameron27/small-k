@@ -41,15 +41,16 @@ module SMALL-SYNTAX-COMMON
                  | String
                  | Id
                  | "read"
+                 | "this"
+                 | Null
                  | "array" "[" Exp ":" Exp "]" ":" TypeDeno
                  | "record" "(" IdTypeDenos ")"
                  | "valof" ":" TypeDeno Block
                  | "(" Exp ")"                                  [bracket]
                  > left:
                    Exp "(" Exps ")"
-                 > left:
-                   Exp "." Exp
-                 > Exp "[" Exp "]"
+                 | Exp "." Exp
+                 | Exp "[" Exp "]"
                  > "cont" Exp
                  | "ref" Exp
                  | "!" Exp
@@ -80,6 +81,8 @@ module SMALL-SYNTAX-COMMON
                    Exp "?" Exp ":" Exp
     syntax Exps ::= List{Exp, ","}
 
+    syntax Null ::= "null"
+
     syntax TypeDeno ::= "int"
                       | "float"
                       | "bool"
@@ -90,6 +93,7 @@ module SMALL-SYNTAX-COMMON
                       | "func" "(" TypeDenos ")" TypeDeno
                       | "file" TypeDeno
                       | "ref" TypeDeno
+                      | Id
 
     syntax TypeDenos ::= List{TypeDeno, ","}
     syntax IdTypeDeno ::= Id ":" TypeDeno
@@ -115,11 +119,22 @@ module SMALL-SYNTAX-PARSED
 
     syntax Dec ::= "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
                  | "record" Id "(" IdTypeDenos ")" ";"
+                 | "class" Id "{" CDecs "}"
     syntax Decs ::= List{Dec, ""}
+
+    syntax CDec ::= "const" Id ":" TypeDeno "=" Exp ";"
+                  | "var" Id ":" TypeDeno "=" Exp ";"
+                  | "file" Id "withbuffer" Id ":" TypeDeno ";"
+                  | "proc" Id "(" IdTypeDenos ")" Block
+                  | "func" Id "(" IdTypeDenos ")" ":" TypeDeno "{" Exp "}"
+                  | "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
+                  | "record" Id "(" IdTypeDenos ")" ";"
+    syntax CDecs ::= List{CDec, ""}
 
     syntax Exp ::= Int
                  | AltInt
                  | Double
+                 | "new" Id "(" ")"
 endmodule
 
 // Syntax additional to the common syntax to complete the extended syntax
@@ -139,11 +154,13 @@ module SMALL-SYNTAX
                    | "{" Com "}"
                    | "{" "}"
 
-    syntax Dec ::= "SkipDec"
+    syntax Dec ::= "class" Id Dec
+                 | "SkipDec"
                  | Dec ";" Dec                                  [right]
 
     syntax Exp ::= MInt{64}
                  | Float
+                 | "new" Exp
     syntax MInt{64}
 
     syntax TypeDeno ::= typeInfer(Exp)
@@ -162,8 +179,8 @@ module SMALL-SYNTAX-CONVERSION
     rule if ( E ) C => if ( E ) C else Skip                     [anywhere]
 
     // Array and Record Declarations to Constant Declarations
-    rule array I [ E1 : E2 ] : T ; => const I : array of T = array [ E1 : E2 ] : T ;    [anywhere]
-    rule record I ( ITs ) ; => const I : record ( ITs ) = record ( ITs ) ;  [anywhere]
+    rule (array I [ E1 : E2 ] : T ;):Dec => const I : array of T = array [ E1 : E2 ] : T ;  [anywhere]
+    rule (record I ( ITs ) ;):Dec => const I : record ( ITs ) = record ( ITs ) ;    [anywhere]
 
     // Remove trap's awkward syntax required to force the correct formatting
     rule trap { Ds Cs Escs } => trap { Ds Cs } Escs             [anywhere]
@@ -193,17 +210,40 @@ module SMALL-SYNTAX-CONVERSION
         (for ( I = F1 ) C) ;
         (for ( I = F2 ) C)                                      [anywhere]
 
-    // Convert syntax that uses Coms or Decs to a version that does not
-    rule { Ds:Decs Cs:Coms } => { convert(Ds) ; convert(Cs) }   [anywhere]
-    rule I : C:Coms => I :: convert(C)                          [anywhere]
+    // Covert CDecs in class to Decs
+    rule class I { CDs:CDecs } => class I convertCDecs(CDs)     [anywhere]
 
-    // Convert uses of Coms and Decs to chains
-    syntax Com ::= convert(Coms)                                [function]
-    syntax Dec ::= convert(Decs)                                [function]
-    rule convert(C:Com Cs) => C ; convert(Cs)
-    rule convert(.Coms) => Skip
-    rule convert(D:Dec Ds) => D ; convert(Ds)
-    rule convert(.Decs) => SkipDec
+    // Convert Id in new to an Exp
+    rule new I ( ) => new I
+
+    // Convert syntax that uses Coms or Decs to a version that does not
+    rule { Ds:Decs Cs:Coms } => { convertDecs(Ds) ; convertComs(Cs) }   [anywhere]
+    rule I : C:Coms => I :: convertComs(C)                      [anywhere]
+
+    // Convert uses of Coms to chains
+    syntax Com ::= convertComs(Coms)                            [function]
+    rule convertComs(C Cs) => C ; convertComs(Cs)
+    rule convertComs(.Coms) => Skip
+
+    // Convert uses of Decs to chains
+    syntax Dec ::= convertDecs(Decs)                            [function]
+    rule convertDecs(D Ds) => D ; convertDecs(Ds)
+    rule convertDecs(.Decs) => SkipDec
+
+    // Convert CDec to Dec
+    syntax Dec ::= convertCDec(CDec)                            [function]
+    rule convertCDec(const I : T = E ;) => const I : T = E ;
+    rule convertCDec(var I : T = E ;) => var I : T = E ;
+    rule convertCDec(file I1 withbuffer I2 : T ;) => file I1 withbuffer I2 : T ;
+    rule convertCDec(proc I ( ITs ) C) => proc I ( ITs ) C
+    rule convertCDec(func I ( ITs ) : T { E }) => func I ( ITs ) : T { E }
+    rule convertCDec(array I [ E1 : E2 ] : T ;) => array I [ E1 : E2 ] : T ;
+    rule convertCDec(record I ( ITs ) ;) => record I ( ITs ) ;
+
+    // Convert uses of CDecs to Decs
+    syntax Dec ::= convertCDecs(CDecs)                          [function]
+    rule convertCDecs(CD CDs) => convertCDec(CD) ; convertCDecs(CDs)
+    rule convertCDecs(.CDecs) => SkipDec
 
     // Convert alt-ints to ints
     rule AI:AltInt => AltInt2Int(AI)

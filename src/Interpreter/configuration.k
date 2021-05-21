@@ -8,6 +8,7 @@ module CONFIGURATION
         <env> .Map </env>
         <globalEnv> .Map </globalEnv>
         <store> .Map </store>
+        <this> .Map </this>
         <stack> .List </stack>
         <in stream="stdin"> .List </in>
         <out stream="stdout"> .List </out>

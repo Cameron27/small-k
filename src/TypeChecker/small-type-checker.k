@@ -4,6 +4,7 @@ requires "Core/exp.k"
 requires "Core/type-deno.k"
 requires "Features/operations.k"
 requires "Features/default-environment.k"
+requires "Features/classes.k"
 requires "../Parser/small-syntax.k"
 
 module SMALL-TYPE-CHECKER
@@ -16,10 +17,12 @@ module SMALL-TYPE-CHECKER
     imports BOOL
     imports INT
     imports SMALL-SYNTAX-CONVERSION
+    imports CLASSES
 
     // run program
     rule <k> program C => C </k>
          <tenv> _ => defaultEnvironment() </tenv>
+         <classes> _ => -1 |-> TClass -1 .Map </classes>
 
     // Handle exitcode
     rule <k> K </k>

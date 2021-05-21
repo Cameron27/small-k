@@ -28,6 +28,14 @@ module TYPE
                   | "TRefMaybe" Type
                   | "TEscape"
                   | "TVoid"
+                  | "TClass" Int Map
+                  | "TClassAny"
+                  | "TObject" Int
+                  | "TObjectAny"
+                  | "TNull"
+                  | "TMethod" Type
+                  | "TMethodAny"
+                  | "TUnion" Types
                   | "TError"
     syntax Types ::= List{Type, ",,"}
     syntax IdType ::= Id ":" Type
@@ -35,37 +43,50 @@ module TYPE
 
     syntax TypeDeno ::= Type
 
-    // Type Equality
-    syntax Bool ::= Type "==Type" Type                          [function, functional]
-    rule TArray T1 ==Type TArray T2 => T1 ==Type T2
-    rule TRecord T1 ==Type TRecord T2 => idTypeSet(T1) ==Set idTypeSet(T2)
-    rule TProc Ts1 ==Type TProc Ts2 => Ts1 ==Types Ts2
-    rule TFunc Ts1 T1 ==Type TFunc Ts2 T2 => Ts1 ==Types Ts2 andBool T1 ==Type T2
-    rule TFile T1 ==Type TFile T2 => T1 ==Type T2
-    rule TRef T1 ==Type TRef T2 => T1 ==Type T2
-    rule TRefMaybe T1 ==Type TRefMaybe T2 => T1 ==Type T2
-    rule TArray _ ==Type TArrayAny => true
-    rule TArrayAny ==Type TArray _ => true
-    rule TRecord _ ==Type TRecordAny => true
-    rule TRecordAny ==Type TRecord _ => true
-    rule TProc _ ==Type TProcAny => true
-    rule TProcAny ==Type TProc _ => true
-    rule TFunc _ _ ==Type TFuncAny => true
-    rule TFuncAny ==Type TFunc _ _ => true
-    rule TFile _ ==Type TFileAny => true
-    rule TFileAny ==Type TFile _ => true
-    rule TRef _ ==Type TRefAny => true
-    rule TRefAny ==Type TRef _ => true
-    rule T1 ==Type T2 => T1 ==K T2                              [owise]
-    syntax Bool ::= Types "==Types" Types                       [function, functional]
-    rule T1 ,, Ts1 ==Types T2 ,, Ts2
-        => T1 ==Type T2 andBool Ts1 ==Types Ts2
-    rule .Types ==Types .Types => true
-    rule _ ==Types _ => false                                   [owise]
+    // Environment used to evaluate TypeDenos
+    syntax TypeDeno ::= teval(TypeDeno)
+    syntax TevalResult ::= Id | Type
+    context teval(HOLE)                                         [result(TevalResult)]
+
+
+    // Subtype Relationship
+    syntax Bool ::= Type "<=Type" Type                          [function, functional]
+    // any cases
+    rule TArray _ <=Type TArrayAny => true
+    rule TRecord _ <=Type TRecordAny => true
+    rule TProc _ <=Type TProcAny => true
+    rule TFunc _ _ <=Type TFuncAny => true
+    rule TFile _ <=Type TFileAny => true
+    rule TRef _ <=Type TRefAny => true
+    rule TClass _ _ <=Type TClassAny => true
+    rule TObject _ <=Type TObjectAny => true
+    rule TNull <=Type TObject _ => true
+    rule TNull <=Type TObjectAny => true
+    rule TMethod _ <=Type TMethodAny => true
+    rule T1 <=Type TUnion T2 ,, Ts => T1 <=Type T2 orBool T1 <=Type TUnion Ts
+    rule _ <=Type TUnion .Types => false
+    // nested cases
+    rule TArray T1 <=Type TArray T2 => T1 <=Type T2
+    rule TRecord T1 <=Type TRecord T2 => allIn(T2, map(T1))
+    rule TProc Ts1 <=Type TProc Ts2 => Ts2 <=Types Ts1
+    rule TFunc Ts1 T1<=Type TFunc Ts2 T2 => Ts2 <=Types Ts1 andBool T1 <=Type T2
+    rule TFile T1 <=Type TFile T2 => T1 <=Type T2
+    rule TRef T1 <=Type TRef T2 => T1 <=Type T2
+    rule TRefMaybe T1 <=Type TRefMaybe T2 => T1 <=Type T2
+    rule TMethod T1 <=Type TMethod T2 => T1 <=Type T2
+    rule T1 <=Type T2 => T1 ==K T2                              [owise]
+    // Subtypes Relationship
+    syntax Bool ::= Types "<=Types" Types                       [function, functional]
+    rule T1 ,, Ts1 <=Types T2 ,, Ts2
+        => T1 <=Type T2 andBool Ts1 <=Types Ts2
+    rule .Types <=Types .Types => true
+    rule _ <=Types _ => false                                   [owise]
+    syntax Bool ::= Type "<=>Type" Type                         [function, functional]
+    rule T1 <=>Type T2 => T1 <=Type T2 orBool T2 <=Type T1
 
     // Type Assignability
     syntax Bool ::= Type "assignable" Type                      [function, functional]
-    rule T1 assignable T2 => TRef T1 ==Type T2
+    rule T1 assignable T2 => TRef T1 <=Type T2
 
     // Printable
     syntax Printable
@@ -85,6 +106,8 @@ module TYPE
     rule isSv(TArray _) => true
     rule isSv(TRecord _) => true
     rule isSv(TFile _) => true
+    rule isSv(TObject _) => true
+    rule isSv(TNull) => true
     rule isSv(_) => false                                       [owise]
 
     // Right Hand
@@ -96,6 +119,8 @@ module TYPE
     rule isRv(TRef _) => true
     rule isRv(TArray _) => true
     rule isRv(TRecord _) => true
+    rule isRv(TObject _) => true
+    rule isRv(TNull) => true
     rule isRv(_) => false                                       [owise]
 
     // TypeDenos Conversion
@@ -107,7 +132,7 @@ module TYPE
 
     // IdTypeDenos Conversion
     syntax IdTypeDenos ::= IdTypes
-    context _ : HOLE , _
+    context _ : (HOLE => teval(HOLE)) , _
     context _ : _ , HOLE                                        [result(IdTypes)]
     rule I : T:Type , ITs:IdTypes => I : T ,, ITs
     rule .IdTypeDenos => .IdTypes
@@ -129,36 +154,35 @@ module TYPE
     // Try Merge
     syntax Type ::= tryMerge(Type, Type)                        [function, functional]
     rule tryMerge(TRef T1, TRef T2) => TRef tryMerge(T1, T2)    [priority(160)]
-    rule tryMerge(TRefMaybe T1, TRefMaybe T2) => TRefMaybe T1
-        requires T1 ==K T2                                      [priority(160)]
-    rule tryMerge(TRef T1, TRefMaybe T2) => TRefMaybe T1
-        requires T1 ==K T2                                      [priority(160)]
-    rule tryMerge(TRefMaybe T1, TRef T2) => TRefMaybe T1
-        requires T1 ==K T2                                      [priority(160)]
-    rule tryMerge(T1, TRefMaybe T2) => TRefMaybe T1
-        requires T1 ==K T2                                      [priority(180)]
-    rule tryMerge(TRefMaybe T1, T2) => TRefMaybe T1
-        requires T1 ==K T2                                      [priority(180)]
-    rule tryMerge(TRef T1, T2) => TRefMaybe T1
-        requires T1 ==K T2                                      [priority(180)]
-    rule tryMerge(T1, TRef T2) => TRefMaybe T1
-        requires T1 ==K T2                                      [priority(180)]
-    rule tryMerge(T1, T2) => T1
-        requires T1 ==K T2                                      [priority(190)]
+    rule tryMerge(TRefMaybe T1, TRefMaybe T2) => TRefMaybe maxType(T1, T2)
+        requires T1 <=>Type T2                                  [priority(160)]
+    rule tryMerge(TRef T1, TRefMaybe T2) => TRefMaybe maxType(T1, T2)
+        requires T1 <=>Type T2                                  [priority(160)]
+    rule tryMerge(TRefMaybe T1, TRef T2) => TRefMaybe maxType(T1, T2)
+        requires T1 <=>Type T2                                  [priority(160)]
+    rule tryMerge(T1, TRefMaybe T2) => TRefMaybe maxType(T1, T2)
+        requires T1 <=>Type T2                                  [priority(180)]
+    rule tryMerge(TRefMaybe T1, T2) => TRefMaybe maxType(T1, T2)
+        requires T1 <=>Type T2                                  [priority(180)]
+    rule tryMerge(TRef T1, T2) => TRefMaybe maxType(T1, T2)
+        requires T1 <=>Type T2                                  [priority(180)]
+    rule tryMerge(T1, TRef T2) => TRefMaybe maxType(T1, T2)
+        requires T1 <=>Type T2                                  [priority(180)]
+    rule tryMerge(T1, T2) => maxType(T1, T2)
+        requires T1 <=>Type T2                                  [priority(190)]
     rule tryMerge(_, _) => TError                               [priority(200)]
 
-
-    // Ids From IdTypes
+    // Ids from IdTypes
     syntax Ids ::= ids(IdTypes)                                 [function]
     rule ids(I : _ ,, ITs) => I , ids(ITs)
     rule ids(.IdTypes) => .Ids
 
-    // Types From IdTypes
+    // Types from IdTypes
     syntax Types ::= types(IdTypes)                             [function]
     rule types(_ : T ,, ITs) => T ,, types(ITs)
     rule types(.IdTypes) => .Types
 
-    // Maps From Different Types
+    // Maps from different Types
     syntax Map ::= map(IdTypes)                                 [function]
                  | map(Escs)                                    [function]
     rule map(I : T ,, ITs) => updateMap(map(ITs), I |-> T)
@@ -166,7 +190,7 @@ module TYPE
     rule map(I :: _ Escs) => updateMap(map(Escs), I |-> TEscape)
     rule map(.Escs) => .Map
 
-    // Check All Ids Are Different
+    // Check all Ids are different
     syntax Bool ::= allDifferent(Ids)                           [function, functional]
     rule allDifferent(Is) => size(Is) ==Int size(idSet(Is))
 
@@ -175,13 +199,21 @@ module TYPE
     rule idSet(I , Is) => SetItem(I) idSet(Is)
     rule idSet(.Ids) => .Set
 
-    // IdTypes to IdType Set
-    syntax Set ::= idTypeSet(IdTypes)                           [function]
-    rule idTypeSet(IT ,, ITs) => SetItem(IT) idTypeSet(ITs)
-    rule idTypeSet(.IdTypes) => .Set
-
     // Size of Ids
     syntax Int ::= size(Ids)                                    [function, functional]
     rule size(_ , Is) => 1 +Int size(Is)
     rule size(.Ids) => 0
+
+    // Check all IdTypes are in the map from Ids to Types
+    syntax Bool ::= allIn(IdTypes, Map)                         [function]
+    rule allIn(I : T ,, ITs, M) => (T <=Type {M[I] orDefault TError}:>Type) andBool allIn(ITs, M)
+    rule allIn(.IdTypes, _) => true
+
+    // Gets the type that is the larger of the two
+    syntax Type ::= maxType(Type, Type)                         [function, functional]
+    rule maxType(T1, T2) => T1
+        requires T2 <=Type T1
+    rule maxType(T1, T2) => T2
+        requires T1 <=Type T2
+    rule maxType(_, _) => TError                                [owise]
 endmodule

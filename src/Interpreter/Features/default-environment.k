@@ -1,10 +1,12 @@
 requires "../Core/additional-syntax.k"
 requires "../../Common/helper.k"
 requires "files.k"
+requires "classes.k"
 
 module DEFAULT-ENVIRONMENT
     imports ADDITIONAL-SYNTAX
     imports FILE-OPERATIONS
+    imports CLASS-OPERATIONS
     imports HELPER
 
     syntax Map ::= defaultEnvironment()                         [function]
@@ -15,6 +17,7 @@ module DEFAULT-ENVIRONMENT
         String2Id("get") |-> proc(!E , .Ids, env(.Map), get(!E))
         String2Id("put") |-> proc(!E , .Ids, env(.Map), put(!E))
         String2Id("eof") |-> func(!E , .Ids, env(.Map), eof(!E))
+        String2Id("isNull") |-> func(!E , .Ids, env(.Map), isNullF(!E))
 
     // Sign function
     syntax Exp ::= "$signf" "(" Id ")"

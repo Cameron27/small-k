@@ -7,9 +7,13 @@ if [ $code -eq 2 ]
 then
     exit 2
 fi
-if [ $code -eq 113 ]
+if [ $code -eq 139 ]
 then
     exit 3
 fi
-krun --directory "$scriptdir/out/interpreter" $@
-exit $?
+if [ $code -eq 0 ]
+then
+    krun --directory "$scriptdir/out/interpreter" $@
+    exit $?
+fi
+exit $code

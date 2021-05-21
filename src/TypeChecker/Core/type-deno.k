@@ -1,7 +1,9 @@
 requires "additional-syntax.k"
+requires "../configuration.k"
 
 module TYPE-DENO
     imports ADDITIONAL-SYNTAX
+    imports CONFIGURATION
 
     // Basic Types
     rule int => TInt
@@ -10,7 +12,7 @@ module TYPE-DENO
     rule string => TString
 
     // Array
-    context array of HOLE
+    context array of (HOLE => teval(HOLE))
     rule array of T => TArray TRef T
 
     // Record
@@ -28,12 +30,16 @@ module TYPE-DENO
     rule func ( ITs:Types ) T => TFunc ITs T
 
     // File
-    context file HOLE
+    context file (HOLE => teval(HOLE))
     rule file T:Type => TFile T
 
     // Reference
-    context (ref HOLE):TypeDeno
+    context (ref (HOLE => teval(HOLE))):TypeDeno
     rule (ref T:Type):TypeDeno => TRef T
+
+    // Class
+    rule <k> teval(I:Id => TObject N) ...</k>
+         <tenv>... I |-> TClass N _ ...</tenv>
 
     // Type Infer
     context typeInfer(HOLE => reval(HOLE))

@@ -15,8 +15,8 @@ module ADDITIONAL-SYNTAX
     syntax Exp ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
 
-    syntax KItem ::= tenv(Map)
-                   | tenvType(Map)
+    syntax TEnv ::= tenv(Map)
+                  | tenvType(Map)
     // restore environment
     rule <k> tenv(TEnv) => . ...</k>
          <tenv> _ => TEnv </tenv>

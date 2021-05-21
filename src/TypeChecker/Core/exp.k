@@ -31,7 +31,7 @@ module EXP
     // Array
     context array [ (HOLE => reval(HOLE)) : _ ] : _
     context array [ _ : (HOLE => reval(HOLE)) ] : _
-    context array [ _ : _ ] : HOLE
+    context array [ _ : _ ] : (HOLE => teval(HOLE))
     rule array [ TInt : TInt ] : T => TArray refer(T)
         requires refer(T) =/=K TError
 
@@ -41,7 +41,7 @@ module EXP
         requires allDifferent(ids(ITs)) andBool referAll(ITs) =/=K ITError
 
     // Valof
-    context valof : HOLE _
+    context valof : (HOLE => teval(HOLE)) _
     rule <k> valof : T:Type C => C ~> returnType(RT) ~> T ...</k>
          <returnType> RT => T </returnType>
 
@@ -49,7 +49,7 @@ module EXP
     context HOLE:Exp ( _:Exps )
     context _:Exp ( HOLE:Exps )                                 [result(Types)]
     rule TFunc Ts1 T ( Ts2 ) => T
-        requires Ts1 ==Types Ts2
+        requires Ts2 <=Types Ts1
 
     // Dot
     context (HOLE => reval(HOLE)) . _
