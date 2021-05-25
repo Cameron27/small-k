@@ -37,9 +37,9 @@ module ADDITIONAL-SYNTAX
 
     syntax File ::= file(List, Int, Loc)
 
-    syntax Class ::= class(Id, Dec, Env)
+    syntax Class ::= class(Id, Int, SCDec, Env)
 
-    syntax Object ::= obj(Map) | Null
+    syntax Object ::= obj(ObjMap) | Null
 
     syntax Method ::= method(Proc)
                     | method(Func)

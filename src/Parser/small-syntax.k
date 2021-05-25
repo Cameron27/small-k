@@ -119,8 +119,13 @@ module SMALL-SYNTAX-PARSED
 
     syntax Dec ::= "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
                  | "record" Id "(" IdTypeDenos ")" ";"
-                 | "class" Id "{" CDecs "}"
+                 | "class" Id "{" SCDecs "}"
     syntax Decs ::= List{Dec, ""}
+
+    syntax SCDec ::= "public" CDec
+                   | "private" CDec
+                   | CDec
+    syntax SCDecs ::= List{SCDec, ""}
 
     syntax CDec ::= "const" Id ":" TypeDeno "=" Exp ";"
                   | "var" Id ":" TypeDeno "=" Exp ";"
@@ -129,7 +134,6 @@ module SMALL-SYNTAX-PARSED
                   | "func" Id "(" IdTypeDenos ")" ":" TypeDeno "{" Exp "}"
                   | "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
                   | "record" Id "(" IdTypeDenos ")" ";"
-    syntax CDecs ::= List{CDec, ""}
 
     syntax Exp ::= Int
                  | AltInt
@@ -154,9 +158,14 @@ module SMALL-SYNTAX
                    | "{" Com "}"
                    | "{" "}"
 
-    syntax Dec ::= "class" Id Dec
+    syntax Dec ::= "class" Id SCDec
                  | "SkipDec"
                  | Dec ";" Dec                                  [right]
+
+    syntax SCDec ::= "public" Dec
+                   | "private" Dec
+                   | "SkipSCDec"
+                   | SCDec ";" SCDec                            [right]
 
     syntax Exp ::= MInt{64}
                  | Float
@@ -211,7 +220,7 @@ module SMALL-SYNTAX-CONVERSION
         (for ( I = F2 ) C)                                      [anywhere]
 
     // Covert CDecs in class to Decs
-    rule class I { CDs:CDecs } => class I convertCDecs(CDs)     [anywhere]
+    rule class I { SCDs } => class I convertSCDecs(SCDs)        [anywhere]
 
     // Convert Id in new to an Exp
     rule new I ( ) => new I
@@ -230,6 +239,17 @@ module SMALL-SYNTAX-CONVERSION
     rule convertDecs(D Ds) => D ; convertDecs(Ds)
     rule convertDecs(.Decs) => SkipDec
 
+    // Convert uses of SCDecs to chains
+    syntax SCDec ::= convertSCDecs(SCDecs)                      [function]
+    rule convertSCDecs(SCD SCDs) => convertSCDec(SCD) ; convertSCDecs(SCDs)
+    rule convertSCDecs(.SCDecs) => SkipSCDec
+
+    // Convert SCDec to from CDec versions to Dec versions
+    syntax SCDec ::= convertSCDec(SCDec)                        [function]
+    rule convertSCDec(public CD) => public convertCDec(CD)
+    rule convertSCDec(private CD) => private convertCDec(CD)
+    rule convertSCDec(CD) => private convertCDec(CD)
+
     // Convert CDec to Dec
     syntax Dec ::= convertCDec(CDec)                            [function]
     rule convertCDec(const I : T = E ;) => const I : T = E ;
@@ -239,11 +259,6 @@ module SMALL-SYNTAX-CONVERSION
     rule convertCDec(func I ( ITs ) : T { E }) => func I ( ITs ) : T { E }
     rule convertCDec(array I [ E1 : E2 ] : T ;) => array I [ E1 : E2 ] : T ;
     rule convertCDec(record I ( ITs ) ;) => record I ( ITs ) ;
-
-    // Convert uses of CDecs to Decs
-    syntax Dec ::= convertCDecs(CDecs)                          [function]
-    rule convertCDecs(CD CDs) => convertCDec(CD) ; convertCDecs(CDs)
-    rule convertCDecs(.CDecs) => SkipDec
 
     // Convert alt-ints to ints
     rule AI:AltInt => AltInt2Int(AI)

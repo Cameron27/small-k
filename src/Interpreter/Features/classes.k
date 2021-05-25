@@ -8,57 +8,62 @@ module CLASSES
     imports INTERPRETER-HELPER
 
     // Class
-    rule <k> class I D => . ...</k>
-         <env> Env => Env[I <- class(I, D, env(Env["return" <- undef]))] </env>
+    rule <k> class I SCD => . ...</k>
+         <env> Env => Env[I <- class(I, !_, SCD, env(Env["return" <- undef]))] </env>
 
     // New
     context new HOLE
-    syntax KItem ::= objDec(Dec)
-    rule <k> new class(I, D, env(Env')) ~> Rest => objDec(D) ~> getThis() ~> popE() </k>
-         <env> Env => Env'[I <- class(I, D, env(Env'))] </env>
+    rule <k> new class(I, N, SCD, env(Env')) ~> Rest => SCD ~> getThis() ~> popE() </k>
+         <env> Env => Env'[I <- class(I, N, SCD, env(Env'))] </env>
          <stack> Stack => ListItem(frame(!_, env(Env, obj(This)), Rest)) Stack </stack>
-         <this> This => .Map </this>
+         <this> This => N, .Map, .Map </this>
+
+    syntax KItem ::= objDec(Dec)
+                   | "public"
+                   | "private"
+    rule public D => objDec(D) ~> public
+    rule <k> M:Map ~> public => . ...</k>
+         <this> _, (Obj => updateMap(Obj, M)), _ </this>
+    rule <k> M:Map ~> private => . ...</k>
+         <this> _, _, (Obj => updateMap(Obj, M)) </this>
+    rule private D => objDec(D) ~> private
+
+    // Chain
+    rule SCD1:SCDec ; SCD2 => SCD1 ~> SCD2                      [structural]
+
+    // Skip
+    rule SkipSCDec => .
 
     // Constant
     context objDec(const _ : _ = (HOLE => reval(HOLE)) ;)
-    rule <k> objDec(const I : _ = E:Rv ;) => . ...</k>
-         <this> Obj => Obj[I <- E] </this>
+    rule objDec(const I : _ = E:Rv ;) => I |-> E
 
     // Variable
     context objDec(var _ : _ = (HOLE => reval(HOLE)) ;)
-    rule <k> objDec(var I : _ = E:Rv ;) => . ...</k>
-         <this> Obj => Obj[I <- Loc(!N)] </this>
+    rule <k> objDec(var I : _ = E:Rv ;) => I |-> Loc(!N) ...</k>
          <store> Store => Store[Loc(!N) <- E] </store>
 
-    // File
-    rule <k> objDec(file F withbuffer B : _ ;) => . ...</k>
-         <this> Obj => Obj[B <- Loc(!B)][F <- Loc(!F)] </this>
+    // // File
+    rule <k> objDec(file F withbuffer B : _ ;) => updateMap(B |-> Loc(!B), F |-> Loc(!F)) ...</k>
          <store> Store => Store[Loc(!F) <- file(.List, 1, Loc(!B))] </store>
 
     // Procedure
-    rule <k> objDec(proc I(ITs) C) => . ...</k>
+    rule <k> objDec(proc I(ITs) C) => I |-> method(proc(IdTypeDenos2Ids(ITs), env(Env), C)) ...</k>
          <env> Env </env>
-         <this> Obj => Obj[I <- method(proc(IdTypeDenos2Ids(ITs), env(Env), C))] </this>    [structural]
 
     // Function
-    rule <k> objDec(func I(ITs) : _ { E }) => . ...</k>
+    rule <k> objDec(func I(ITs) : _ { E }) => I |-> method(func(IdTypeDenos2Ids(ITs), env(Env), E)) ...</k>
          <env> Env </env>
-         <this> Obj => Obj[I <- method(func(IdTypeDenos2Ids(ITs), env(Env), E))] </this>    [structural]
-
-    // Chain
-    rule objDec(D1 ; D2) => objDec(D1) ~> objDec(D2)            [structural]
-
-    // Skip
-    rule objDec(SkipDec) => .
 
     // This
     rule <k> this => obj(This) ...</k>
          <this> This </this>
 
     // Dot
-    rule <k> obj(OEnv) . E ~> Rest => E ~> popEMethod(obj(OEnv)) </k>
-         <env> Env => updateMap(Env, OEnv) </env>
+    rule <k> obj(N1, Public , Private) . E ~> Rest => E ~> popEMethod(obj(N1, Public , Private)) </k>
+         <env> Env => #if N1 ==Int N2 #then updateMap(updateMap(Env, Public), Private) #else updateMap(Env, Public) #fi </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
+         <this> N2, _, _ </this>
 
     // Method Procedure
     rule <k> methodProc(Is, env(Env'), C, O) ( Es ) ; ~> Rest => params(Is, Es) ~> setThis(O) ~> C ~> pop() </k>
