@@ -6,62 +6,80 @@ module CLASSES
     imports ADDITIONAL-SYNTAX
 
     // Class
-    syntax KItem ::= objSCDec(SCDec, Map, Map, Dec)
-                   | createClass(Id, Int)
-    rule <k> class I SCD => objSCDec(SCD, .Map, .Map, SkipDec) ~> createClass(I, !N) ...</k>
-         <tenv> TEnv => TEnv[I <- TClass !N .Map] </tenv>
-         <classes> Classes => Classes[!N <- TClass !N .Map] </classes>
+    syntax KItem ::= SCDecInterface(SCDec, Map, Map) // Scoped class declarations, public mapping, private mapping - produce class interface
+                   | SCDec(SCDec, Int) // Scoped class declarations, class' object id - type check SCDs
+                   | end(Id, Int, SCDec) // Identifier of class, classes object id, scoped class declarations - mark end of SCDecInterface
+    // Type check the scoped class declarations then create the class, for now assumes the class has no mapping
+    rule class I SCDs => createClass(I, !N, .Map) ~> SCDecInterface(SCDs, .Map, .Map) ~> end(I, !N, SCDs)
 
-    // Turn the declaration in the scoped class declaration into a map (the update that needs to be made) and optionally
-    // a declaration (function/procedure body checking that need to be done)
-    syntax ObjUpdateDec ::= Map "," Dec
-                 | Map
-    syntax Dec ::= ObjUpdateDec
-    syntax Dec ::= objDec(Dec)
-    context objSCDec(public (HOLE => objDec(HOLE)), _, _, _)    [result(ObjUpdateDec)]
-    context objSCDec(private (HOLE => objDec(HOLE)), _, _, _)   [result(ObjUpdateDec)]
+    // Turn the class declaration in the scoped class declaration into a map (what identifiers need to be bound to what
+    // types), the class declarations will be properlly type checked later when the type of the class is known
+    syntax Dec ::= Map
+    syntax Dec ::= CDecInterface(Dec)
+    context SCDecInterface(public (HOLE => CDecInterface(HOLE)), _, _)  [result(Map)]
+    context SCDecInterface(private (HOLE => CDecInterface(HOLE)), _, _) [result(Map)]
 
     // Update either the public or private map accordingly and add the declaration that needs to be checked to the end
-    rule objSCDec(public M':Map , D':Dec => SkipSCDec, M => updateMap(M, M'), _, D => D ; D')
-    rule objSCDec(private M':Map , D':Dec => SkipSCDec, _, M => updateMap(M, M'), D => D ; D')
-    rule objSCDec(public M':Map => SkipSCDec, M => updateMap(M, M'), _, _)
-    rule objSCDec(private M':Map => SkipSCDec, _, M => updateMap(M, M'), _)
+    rule SCDecInterface(public M' => SkipSCDec, M => updateMap(M, M'), _)
+    rule SCDecInterface(private M' => SkipSCDec, _, M => updateMap(M, M'))
 
-    // Chain
-    rule objSCDec(SCD1 ; SCD2, M1, M2, K) => objSCDec(SCD1, M1, M2, K) ~> objSCDec(SCD2, .Map, .Map, SkipDec)
+    // A chain of scoped class declaration involves checking the first one then checking the second one
+    rule SCDecInterface(SCD1 ; SCD2, M1, M2) => SCDecInterface(SCD1, M1, M2) ~> SCDecInterface(SCD2, .Map, .Map)
 
-    // Skip
-    rule objSCDec(SkipSCDec, M1, M2, D) ~> objSCDec(SCD, .Map, .Map, SkipDec) => objSCDec(SCD, M1, M2, D)
-    rule <k> objSCDec(SkipSCDec, M1, M2, D) ~> createClass(I, N) => D ~> removePrivate(I, N, M1) ~> setThis(This) ...</k>
-         <tenv> TEnv => TEnv[I <- TClass N updateMap(M1, M2)] </tenv>
-         <classes> Classes => Classes[N <- TClass N updateMap(M1, M2)] </classes>
-         <this> This => N </this>
+    // A SkipDec can be emiminated from the front with the mappings and declarations to check later being carried forward
+    rule SCDecInterface(SkipSCDec, M1, M2) ~> SCDecInterface(SCD, .Map, .Map) => SCDecInterface(SCD, M1, M2)
 
-    // Constant
-    context objDec(const _ : (HOLE => teval(HOLE)) = _ ;)
-    context objDec(const _ : _ = (HOLE => reval(HOLE)) ;)
-    rule objDec(const I : T1 = T2 ; => I |-> T1)
-            requires T2 <=Type T1
+    // One the last scoped class declaration has been checked, check all the declarations with all the class mappings
+    // then then remove the private mappings for the rest of the program
+    rule <k> SCDecInterface(SkipSCDec, M1, M2) ~> end(I, N, SCDs) => createClass(I, N, updateMap(M1, M2)) ~> SCDec(SCDs, N) ~> createClass(I, N, M1) ~> setThis(This) ~> returnType(ReturnType) ...</k>
+         <this> This => -1 </this>
+         <returnType> ReturnType => TVoid </returnType>
 
-    // Variable
-    context objDec(var _ : (HOLE => teval(HOLE)) = _ ;)
-    context objDec(var _ : _ = (HOLE => reval(HOLE)) ;)
-    rule objDec(var I : T1 = T2 ; => I |-> refer(T1))
-            requires T2 <=Type T1 andBool refer(T1) =/=K TError
+    // Constant Interface
+    context CDecInterface(const _ : (HOLE => teval(HOLE)) = _ ;)
+    rule CDecInterface(const I : T1 = _ ; => I |-> T1)
 
-    // File
-    context objDec(file _ withbuffer _ : (HOLE => teval(HOLE)) ;)
-    rule objDec(file I1 withbuffer I2 : T ; => updateMap(I2 |-> refer(T), I1 |-> refer(TFile T)))
+    // Variable Interface
+    context CDecInterface(var _ : (HOLE => teval(HOLE)) = _ ;)
+    rule CDecInterface(var I : T1 = _ ; => I |-> refer(T1))
+            requires refer(T1) =/=K TError
+
+    // File Interface
+    context CDecInterface(file _ withbuffer _ : (HOLE => teval(HOLE)) ;)
+    rule CDecInterface(file I1 withbuffer I2 : T ; => updateMap(I2 |-> refer(T), I1 |-> refer(TFile T)))
             requires refer(T) =/=K TError
 
+    // Procedure Interface
+    context CDecInterface(proc _ ( HOLE ) _)                    [result(IdTypes)]
+    rule CDecInterface(proc I ( ITs ) _ => I |-> TMethod TProc types(ITs))
+
+    // Function Interface
+    context CDecInterface(func _ ( HOLE ) : _ { _ })            [result(IdTypes)]
+    context CDecInterface(func _ ( _ ) : (HOLE => teval(HOLE)) { _ })
+    rule CDecInterface(func I ( ITs ) : T { _ } => I |-> TMethod TFunc types(ITs) T)
+
+    // A chain of scoped class declaration involves checking the first one then checking the second one
+    rule SCDec(SCD1 ; SCD2, N) => SCDec(SCD1, N) ~> SCDec(SCD2, N)
+
+    // Public or private do not matter, just check the class declaration
+    syntax KItem ::= CDec(Dec, Int)
+    rule SCDec(public D, N) => CDec(D, N)
+    rule SCDec(private D, N) => CDec(D, N)
+    rule SCDec(SkipSCDec, _) => .
+
     // Procedure
-    context objDec(proc _ ( HOLE ) _)                           [result(IdTypes)]
-    rule objDec(proc I ( ITs ) C => I |-> TMethod TProc types(ITs) , proc I ( ITs ) C)
+    rule <k> CDec(proc I ( ITs ) C, N) => proc I ( ITs ) C ~> setThis(This) ~> tenv(TEnv) ...</k>
+         <tenv> TEnv </tenv>
+         <this> This => N </this>
 
     // Function
-    context objDec(func _ ( HOLE ) : _ { _ })                   [result(IdTypes)]
-    context objDec(func _ ( _ ) : (HOLE => teval(HOLE)) { _ })
-    rule objDec(func I ( ITs ) : T { E } => I |-> TMethod TFunc types(ITs) T , func I ( ITs ) : T { E })
+    rule <k> CDec(func I ( ITs ) : T { E }, N) => func I ( ITs ) : T { E } ~> setThis(This) ~> tenv(TEnv) ...</k>
+         <tenv> TEnv </tenv>
+         <this> This => N </this>
+
+    // Other Class Declaration
+    rule <k> CDec(D, _) => D ~> tenv(TEnv) ...</k>
+         <tenv> TEnv </tenv>                                    [owise]
 
     // This
     rule <k> this => TObject This ...</k>
@@ -91,8 +109,12 @@ module CLASSES
     rule <k> setThis(This) => . ...</k>
          <this> _ => This </this>
 
-    syntax KItem ::= removePrivate(Id, Int, Map)
-    rule <k> removePrivate(I, N, M) => . ...</k>
+    syntax KItem ::= useThis(Int, K)
+    rule <k> useThis(N, K) => K ~> setThis(This) ...</k>
+         <this> This => N </this>
+
+    syntax KItem ::= createClass(Id, Int, Map)
+    rule <k> createClass(I, N, M) => . ...</k>
          <tenv> TEnv => TEnv[I <- TClass N M] </tenv>
          <classes> Classes => Classes[N <- TClass N M] </classes>
 endmodule
