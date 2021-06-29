@@ -42,12 +42,8 @@ module TYPE
     syntax IdTypes ::= List{IdType, ",,"}
 
     syntax TypeDeno ::= Type
-
-    // Environment used to evaluate TypeDenos
-    syntax TypeDeno ::= teval(TypeDeno)
-    syntax TevalResult ::= Id | Type
-    context teval(HOLE)                                         [result(TevalResult)]
-
+    syntax TypeDenos ::= Types
+    syntax IdTypeDenos ::= IdTypes
 
     // Subtype Relationship
     syntax Bool ::= Type "<=Type" Type                          [function, functional]
@@ -122,20 +118,6 @@ module TYPE
     rule isRv(TObject _) => true
     rule isRv(TNull) => true
     rule isRv(_) => false                                       [owise]
-
-    // TypeDenos Conversion
-    syntax TypeDenos ::= Types
-    context (HOLE , _):TypeDenos
-    context (_ , HOLE):TypeDenos                                [result(Types)]
-    rule T:Type , Ts:Types => T ,, Ts
-    rule .TypeDenos => .Types
-
-    // IdTypeDenos Conversion
-    syntax IdTypeDenos ::= IdTypes
-    context _ : (HOLE => teval(HOLE)) , _
-    context _ : _ , HOLE                                        [result(IdTypes)]
-    rule I : T:Type , ITs:IdTypes => I : T ,, ITs
-    rule .IdTypeDenos => .IdTypes
 
     // Reference
     syntax Type ::= refer(Type)                                 [function, functional]

@@ -15,6 +15,8 @@ module ADDITIONAL-SYNTAX
     syntax Exp ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
 
+    syntax TypeDeno ::= teval(TypeDeno)
+
     syntax TEnv ::= tenv(Map)
                   | tenvType(Map)
     // restore environment
