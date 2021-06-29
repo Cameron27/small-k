@@ -41,9 +41,9 @@ module TYPE
     syntax IdType ::= Id ":" Type
     syntax IdTypes ::= List{IdType, ",,"}
 
-    syntax TypeDeno ::= Type
-    syntax TypeDenos ::= Types
-    syntax IdTypeDenos ::= IdTypes
+    syntax TypeExp ::= Type
+    syntax TypeExps ::= Types
+    syntax IdTypeExps ::= IdTypes
 
     // Subtype Relationship
     syntax Bool ::= Type "<=Type" Type                          [function, functional]

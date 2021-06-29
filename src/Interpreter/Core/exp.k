@@ -41,7 +41,7 @@ module EXP
 
     // Record
     syntax KItem ::= createRecordLocs(Record, Ids)
-    rule (record ( ITs )):Exp => createRecordLocs(record(.Map), IdTypeDenos2Ids(ITs))   [structural]
+    rule (record ( ITs )):Exp => createRecordLocs(record(.Map), IdTypeExps2Ids(ITs))   [structural]
     rule createRecordLocs(record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
     rule createRecordLocs(Record, .Ids) => Record
 

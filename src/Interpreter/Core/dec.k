@@ -57,26 +57,26 @@ module DEC
 
     // Record
     syntax KItem ::= createRecordLocs(Id, Record, Ids)
-    rule record I ( ITs ) ; => createRecordLocs(I, record(.Map), IdTypeDenos2Ids(ITs))  [structural]
+    rule record I ( ITs ) ; => createRecordLocs(I, record(.Map), IdTypeExps2Ids(ITs))  [structural]
     rule createRecordLocs(_, record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
     rule <k> createRecordLocs(I, Record:Record, .Ids) => . ...</k>
          <env> Env => Env[I <- Record] </env>
 
     // Procedure
     rule <k> proc I(ITs) C => . ...</k>
-         <env> Env => Env[I <- proc(IdTypeDenos2Ids(ITs), env(Env), C)] </env>  [structural]
+         <env> Env => Env[I <- proc(IdTypeExps2Ids(ITs), env(Env), C)] </env>  [structural]
 
     // Recursive Procedure
     rule <k> rec proc I(ITs) C => . ...</k>
-         <env> Env => Env[I <- recProc(I , IdTypeDenos2Ids(ITs), env(Env), C)] </env>   [structural]
+         <env> Env => Env[I <- recProc(I , IdTypeExps2Ids(ITs), env(Env), C)] </env>   [structural]
 
     // Function
     rule <k> func I(ITs) : _ { E } => . ...</k>
-         <env> Env => Env[I <- func(IdTypeDenos2Ids(ITs), env(Env), E)] </env>  [structural]
+         <env> Env => Env[I <- func(IdTypeExps2Ids(ITs), env(Env), E)] </env>  [structural]
 
     // Recursive Function
     rule <k> rec func I(ITs) : _ { E } => . ...</k>
-         <env> Env => Env[I <- recFunc(I , IdTypeDenos2Ids(ITs), env(Env), E)] </env>   [structural]
+         <env> Env => Env[I <- recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)] </env>   [structural]
 
     // Chain
     rule D1:Dec ; D2 => D1 ~> D2                                [structural]

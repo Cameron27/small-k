@@ -11,13 +11,6 @@ module CLASSES
     rule <k> class I SCD => . ...</k>
          <env> Env => Env[I <- class(I, !_, SCD, env(Env["return" <- undef]))] </env>
 
-    // New
-    context new HOLE
-    rule <k> new class(I, N, SCD, env(Env')) ~> Rest => SCD ~> getThis() ~> popE() </k>
-         <env> Env => Env'[I <- class(I, N, SCD, env(Env'))] </env>
-         <stack> Stack => ListItem(frame(!_, env(Env, obj(This)), Rest)) Stack </stack>
-         <this> This => N, .Map, .Map </this>
-
     syntax KItem ::= objDec(Dec)
                    | "public"
                    | "private"
@@ -55,7 +48,7 @@ module CLASSES
 
     // Record
     syntax Dec ::= createRecordLocs(Id, Record, Ids)
-    rule objDec(record I ( ITs ) ; => createRecordLocs(I, record(.Map), IdTypeDenos2Ids(ITs)))  [structural]
+    rule objDec(record I ( ITs ) ; => createRecordLocs(I, record(.Map), IdTypeExps2Ids(ITs)))   [structural]
     rule objDec(createRecordLocs(_, record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is))
     rule objDec(createRecordLocs(I, Record:Record, .Ids)) => I |-> Record
 
@@ -64,12 +57,19 @@ module CLASSES
          <store> Store => Store[Loc(!F) <- file(.List, 1, Loc(!B))] </store>
 
     // Procedure
-    rule <k> objDec(proc I(ITs) C) => I |-> method(proc(IdTypeDenos2Ids(ITs), env(Env), C)) ...</k>
+    rule <k> objDec(proc I(ITs) C) => I |-> method(proc(IdTypeExps2Ids(ITs), env(Env), C)) ...</k>
          <env> Env </env>
 
     // Function
-    rule <k> objDec(func I(ITs) : _ { E }) => I |-> method(func(IdTypeDenos2Ids(ITs), env(Env), E)) ...</k>
+    rule <k> objDec(func I(ITs) : _ { E }) => I |-> method(func(IdTypeExps2Ids(ITs), env(Env), E)) ...</k>
          <env> Env </env>
+
+    // New
+    context new HOLE
+    rule <k> new class(I, N, SCD, env(Env')) ~> Rest => SCD ~> getThis() ~> popE() </k>
+         <env> Env => Env'[I <- class(I, N, SCD, env(Env'))] </env>
+         <stack> Stack => ListItem(frame(!_, env(Env, obj(This)), Rest)) Stack </stack>
+         <this> This => N, .Map, .Map </this>
 
     // This
     rule <k> this => obj(This) ...</k>

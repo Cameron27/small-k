@@ -20,8 +20,8 @@ module TYPE-DENO
     rule array of T => TArray TRef T
 
     // Record
-    context (record ( HOLE )):TypeDeno                          [result(IdTypes)]
-    rule (record ( ITs:IdTypes )):TypeDeno => TRecord referAll(ITs)
+    context (record ( HOLE )):TypeExp                          [result(IdTypes)]
+    rule (record ( ITs:IdTypes )):TypeExp => TRecord referAll(ITs)
         requires allDifferent(ids(ITs)) andBool referAll(ITs) =/=K ITError
 
     // Procedure
@@ -38,8 +38,8 @@ module TYPE-DENO
     rule file T:Type => TRef TFile T
 
     // Reference
-    context (ref (HOLE => teval(HOLE))):TypeDeno
-    rule (ref T:Type):TypeDeno => TRef T
+    context (ref (HOLE => teval(HOLE))):TypeExp
+    rule (ref T:Type):TypeExp => TRef T
 
     // Class
     rule <k> teval(I:Id => TObject N) ...</k>
@@ -49,15 +49,15 @@ module TYPE-DENO
     context typeInfer(HOLE => reval(HOLE))
     rule typeInfer(T:Type) => T
 
-    // TypeDenos Conversion
-    context ((HOLE => teval(HOLE)) , _):TypeDenos
-    context (_ , HOLE):TypeDenos                                [result(Types)]
-    rule (T:Type , Ts:Types):TypeDenos => T ,, Ts
-    rule .TypeDenos => .Types
+    // TypeExps Conversion
+    context ((HOLE => teval(HOLE)) , _):TypeExps
+    context (_ , HOLE):TypeExps                                [result(Types)]
+    rule (T:Type , Ts:Types):TypeExps => T ,, Ts
+    rule .TypeExps => .Types
 
-    // IdTypeDenos Conversion
+    // IdTypeExps Conversion
     context _ : (HOLE => teval(HOLE)) , _
     context _ : _ , HOLE                                        [result(IdTypes)]
     rule I : T:Type , ITs:IdTypes => I : T ,, ITs
-    rule .IdTypeDenos => .IdTypes
+    rule .IdTypeExps => .IdTypes
 endmodule

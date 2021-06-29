@@ -31,18 +31,18 @@ module SMALL-SYNTAX-COMMON
                  | Exp "step" Exp "until" Exp
                  | For "," For                                  [left]
 
-    syntax Dec ::= "const" Id ":" TypeDeno "=" Exp ";"
-                 | "var" Id ":" TypeDeno "=" Exp ";"
+    syntax Dec ::= "const" Id ":" TypeExp "=" Exp ";"
+                 | "var" Id ":" TypeExp "=" Exp ";"
                  | Own
-                 | "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
-                 | "record" Id "(" IdTypeDenos ")" ";"
-                 | "file" Id "withbuffer" Id ":" TypeDeno ";"
-                 | "proc" Id "(" IdTypeDenos ")" Block
-                 | "rec" "proc" Id "(" IdTypeDenos ")" Block
-                 | "func" Id "(" IdTypeDenos ")" ":" TypeDeno "{" Exp "}"
-                 | "rec" "func" Id "(" IdTypeDenos ")" ":" TypeDeno "{" Exp "}"
+                 | "array" Id "[" Exp ":" Exp "]" ":" TypeExp ";"
+                 | "record" Id "(" IdTypeExps ")" ";"
+                 | "file" Id "withbuffer" Id ":" TypeExp ";"
+                 | "proc" Id "(" IdTypeExps ")" Block
+                 | "rec" "proc" Id "(" IdTypeExps ")" Block
+                 | "func" Id "(" IdTypeExps ")" ":" TypeExp "{" Exp "}"
+                 | "rec" "func" Id "(" IdTypeExps ")" ":" TypeExp "{" Exp "}"
     syntax Own                                                  [locations]
-    syntax Own ::= "own" Id ":" TypeDeno "=" Exp ";"
+    syntax Own ::= "own" Id ":" TypeExp "=" Exp ";"
     syntax Ids ::= List{Id, ","}
 
     syntax Exp ::= Bool
@@ -51,9 +51,9 @@ module SMALL-SYNTAX-COMMON
                  | "read"
                  | "this"
                  | Null
-                 | "array" "[" Exp ":" Exp "]" ":" TypeDeno
-                 | "record" "(" IdTypeDenos ")"
-                 | "valof" ":" TypeDeno Block
+                 | "array" "[" Exp ":" Exp "]" ":" TypeExp
+                 | "record" "(" IdTypeExps ")"
+                 | "valof" ":" TypeExp Block
                  | "(" Exp ")"                                  [bracket]
                  > left:
                    Exp "(" Exps ")"
@@ -91,21 +91,21 @@ module SMALL-SYNTAX-COMMON
 
     syntax Null ::= "null"
 
-    syntax TypeDeno ::= "int"
+    syntax TypeExp ::= "int"
                       | "float"
                       | "bool"
                       | "string"
-                      | "array" "of" TypeDeno
-                      | "record" "(" IdTypeDenos ")"
-                      | "proc" "(" TypeDenos ")"
-                      | "func" "(" TypeDenos ")" TypeDeno
-                      | "file" TypeDeno
-                      | "ref" TypeDeno
+                      | "array" "of" TypeExp
+                      | "record" "(" IdTypeExps ")"
+                      | "proc" "(" TypeExps ")"
+                      | "func" "(" TypeExps ")" TypeExp
+                      | "file" TypeExp
+                      | "ref" TypeExp
                       | Id
 
-    syntax TypeDenos ::= List{TypeDeno, ","}
-    syntax IdTypeDeno ::= Id ":" TypeDeno
-    syntax IdTypeDenos ::= List{IdTypeDeno, ","}
+    syntax TypeExps ::= List{TypeExp, ","}
+    syntax IdTypeExp ::= Id ":" TypeExp
+    syntax IdTypeExps ::= List{IdTypeExp, ","}
 endmodule
 
 // Syntax additional to the common syntax to complete the parsed syntax
@@ -127,13 +127,13 @@ module SMALL-SYNTAX-PARSED
                    | CDec
     syntax SCDecs ::= List{SCDec, ""}
 
-    syntax CDec ::= "const" Id ":" TypeDeno "=" Exp ";"
-                  | "var" Id ":" TypeDeno "=" Exp ";"
-                  | "file" Id "withbuffer" Id ":" TypeDeno ";"
-                  | "proc" Id "(" IdTypeDenos ")" Block
-                  | "func" Id "(" IdTypeDenos ")" ":" TypeDeno "{" Exp "}"
-                  | "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
-                  | "record" Id "(" IdTypeDenos ")" ";"
+    syntax CDec ::= "const" Id ":" TypeExp "=" Exp ";"
+                  | "var" Id ":" TypeExp "=" Exp ";"
+                  | "file" Id "withbuffer" Id ":" TypeExp ";"
+                  | "proc" Id "(" IdTypeExps ")" Block
+                  | "func" Id "(" IdTypeExps ")" ":" TypeExp "{" Exp "}"
+                  | "array" Id "[" Exp ":" Exp "]" ":" TypeExp ";"
+                  | "record" Id "(" IdTypeExps ")" ";"
 
     syntax Exp ::= Int
                  | AltInt
@@ -170,7 +170,7 @@ module SMALL-SYNTAX
                  | "new" Exp
     syntax MInt{64}
 
-    syntax TypeDeno ::= typeInfer(Exp)
+    syntax TypeExp ::= typeInfer(Exp)
 endmodule
 
 // Applies various conversions to go from the parsed syntax to the extended syntax
