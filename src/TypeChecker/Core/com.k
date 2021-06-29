@@ -38,6 +38,31 @@ module COM
     context repeat _ until ( (HOLE => reval(HOLE)) )
     rule repeat C until ( TBool ) => C
 
+    // For
+    syntax KItem ::= for(Exp, For, Com)
+    syntax For ::= forEval(For)
+    context for(HOLE, _, _)
+    context for(_, (HOLE => forEval(HOLE)), _)
+    rule for ( I = F ) C => for(I, F, C)                        [structural]
+    rule for(T1, T2, C) => C
+        requires T2 assignable T1
+    // for exp
+    context forEval((HOLE => reval(HOLE)))
+    // for while
+    context forEval((HOLE => reval(HOLE)) while _)
+    context forEval(_ while (HOLE => reval(HOLE)))
+    rule forEval(T1:Type while TBool => T1)
+    // for step
+    context forEval((HOLE => reval(HOLE)) step _ until _)
+    context forEval(_ step (HOLE => reval(HOLE)) until _)
+    context forEval(_ step _ until (HOLE => reval(HOLE)))
+    rule forEval(TInt step TInt until TInt => TInt)
+    // for chain
+    context forEval((HOLE => forEval(HOLE)) , _)
+    context forEval(_ , (HOLE => forEval(HOLE)))
+    rule forEval(T1 , T2 => T1)
+        requires T1 ==K T2
+
     // Trap
     rule <k> trap C Escs => C ~> tenv(TEnv) ~> Escs ...</k>
          <tenv> TEnv => updateMap(TEnv, map(Escs)) </tenv>

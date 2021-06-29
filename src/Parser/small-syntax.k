@@ -17,6 +17,7 @@ module SMALL-SYNTAX-COMMON
                  | "if" "(" Exp ")" Com                         [prefer]
                  | "while" "(" Exp ")" Com
                  | "repeat" Com "until" "(" Exp ")"
+                 | "for" "(" Id "=" For ")" Com
                  | "escapeto" Id ";"
                  | "return" Exp ";"
                  | "with" Exp "do" Com
@@ -24,6 +25,11 @@ module SMALL-SYNTAX-COMMON
     syntax Esc
     syntax Escs ::= List{Esc, ""}
     syntax Block
+
+    syntax For ::= Exp
+                 | Exp "while" Exp
+                 | Exp "step" Exp "until" Exp
+                 | For "," For                                  [left]
 
     syntax Dec ::= "const" Id ":" TypeDeno "=" Exp ";"
                  | "var" Id ":" TypeDeno "=" Exp ";"
@@ -107,15 +113,9 @@ module SMALL-SYNTAX-PARSED
     imports DOUBLE-SYNTAX
 
     syntax Com ::= "trap" "{" Decs Coms Escs "}"
-                 | "for" "(" Id "=" For ")" Com
     syntax Coms ::= List{Com, ""}
     syntax Esc ::= Id ":" Coms
     syntax Block ::= "{" Decs Coms "}"
-
-    syntax For ::= Exp
-                 | Exp "while" Exp
-                 | Exp "step" Exp "until" Exp
-                 | For "," For                                  [left]
 
     syntax Dec ::= "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
                  | "record" Id "(" IdTypeDenos ")" ";"
@@ -146,8 +146,6 @@ module SMALL-SYNTAX
     imports SMALL-SYNTAX-COMMON
     imports FLOAT-SYNTAX
     imports MINT-SYNTAX
-
-    syntax Id ::= "$1" | "$2" | "$3" | "$sign"
 
     syntax Com ::= "trap" Com Escs
                  | "Skip"
@@ -193,31 +191,6 @@ module SMALL-SYNTAX-CONVERSION
 
     // Remove trap's awkward syntax required to force the correct formatting
     rule trap { Ds Cs Escs } => trap { Ds Cs } Escs             [anywhere]
-
-    // Convert for loops to other forms
-    rule for ( I = E:Exp ) C => I = E ; ; C                     [anywhere]
-    rule for ( I = E1 while E2 ) C => {
-        var $1: typeInfer(E1) = E1 ; ;
-        while (E2) (
-            I = $1 ; ;
-            C ;
-            $1 = E1 ;)
-    }                                                           [anywhere]
-    rule for ( I = E1 step E2 until E3 ) C => {
-        var $1: int = E1 ; ;
-        var $2: int = E2 ; ;
-        var $3: int = E3 ; ;
-        while (($1 - $3) * $sign(cont $2) < 1) (
-            I = $1 ; ;
-            C ;
-            $1 = $1 + $2 ; ;
-            $2 = E2 ; ;
-            $3 = E3 ;
-        )
-    }                                                           [anywhere]
-    rule for ( I = F1 , F2 ) C =>
-        (for ( I = F1 ) C) ;
-        (for ( I = F2 ) C)                                      [anywhere]
 
     // Covert CDecs in class to Decs
     rule class I { SCDs } => class I convertSCDecs(SCDs)        [anywhere]

@@ -6,7 +6,6 @@ module DEFAULT-ENVIRONMENT
 
     syntax Map ::= defaultEnvironment()                         [function]
     rule defaultEnvironment() =>
-        $sign |-> TFunc TInt TInt
         String2Id("reset") |-> TProc TRef TFileAny
         String2Id("rewrite") |-> TProc TRef TFileAny
         String2Id("get") |-> TProc TRef TFileAny

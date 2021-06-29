@@ -4,6 +4,7 @@ requires "Core/exp.k"
 requires "Features/classes.k"
 requires "Features/operations.k"
 requires "Features/files.k"
+requires "Features/for.k"
 requires "../Parser/small-syntax.k"
 
 module SMALL-INTERPRETER
@@ -13,6 +14,7 @@ module SMALL-INTERPRETER
     imports CLASSES
     imports OPERATIONS
     imports FILES
+    imports FOR
     imports SMALL-SYNTAX-CONVERSION
 
     // run program
