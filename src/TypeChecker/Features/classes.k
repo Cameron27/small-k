@@ -42,12 +42,21 @@ module CLASSES
     // Variable Interface
     context CDecInterface(var _ : (HOLE => teval(HOLE)) = _ ;)
     rule CDecInterface(var I : T1 = _ ; => I |-> refer(T1))
-            requires refer(T1) =/=K TError
+        requires refer(T1) =/=K TError
+
+    // Array Interface
+    context CDecInterface(array _ [ _ : _ ] : (HOLE => teval(HOLE)) ;)
+    rule CDecInterface(array I [ _ : _ ] : T ; => I |-> TArray TRef T)
+
+    // Record Interface
+    context CDecInterface(record _ ( HOLE ) ;)                  [result(IdTypes)]
+    rule CDecInterface(record I ( ITs ) ; => I |-> TRecord referAll(ITs))
+        requires allDifferent(ids(ITs)) andBool referAll(ITs) =/=K ITError
 
     // File Interface
     context CDecInterface(file _ withbuffer _ : (HOLE => teval(HOLE)) ;)
     rule CDecInterface(file I1 withbuffer I2 : T ; => updateMap(I2 |-> refer(T), I1 |-> refer(TFile T)))
-            requires refer(T) =/=K TError
+        requires refer(T) =/=K TError
 
     // Procedure Interface
     context CDecInterface(proc _ ( HOLE ) _)                    [result(IdTypes)]

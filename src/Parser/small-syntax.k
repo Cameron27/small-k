@@ -34,6 +34,8 @@ module SMALL-SYNTAX-COMMON
     syntax Dec ::= "const" Id ":" TypeDeno "=" Exp ";"
                  | "var" Id ":" TypeDeno "=" Exp ";"
                  | Own
+                 | "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
+                 | "record" Id "(" IdTypeDenos ")" ";"
                  | "file" Id "withbuffer" Id ":" TypeDeno ";"
                  | "proc" Id "(" IdTypeDenos ")" Block
                  | "rec" "proc" Id "(" IdTypeDenos ")" Block
@@ -117,9 +119,7 @@ module SMALL-SYNTAX-PARSED
     syntax Esc ::= Id ":" Coms
     syntax Block ::= "{" Decs Coms "}"
 
-    syntax Dec ::= "array" Id "[" Exp ":" Exp "]" ":" TypeDeno ";"
-                 | "record" Id "(" IdTypeDenos ")" ";"
-                 | "class" Id "{" SCDecs "}"
+    syntax Dec ::= "class" Id "{" SCDecs "}"
     syntax Decs ::= List{Dec, ""}
 
     syntax SCDec ::= "public" CDec
@@ -184,10 +184,6 @@ module SMALL-SYNTAX-CONVERSION
 
     // If Then to If Then Else
     rule if ( E ) C => if ( E ) C else Skip                     [anywhere]
-
-    // Array and Record Declarations to Constant Declarations
-    rule (array I [ E1 : E2 ] : T ;):Dec => const I : array of T = array [ E1 : E2 ] : T ;  [anywhere]
-    rule (record I ( ITs ) ;):Dec => const I : record ( ITs ) = record ( ITs ) ;    [anywhere]
 
     // Remove trap's awkward syntax required to force the correct formatting
     rule trap { Ds Cs Escs } => trap { Ds Cs } Escs             [anywhere]
