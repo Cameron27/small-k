@@ -45,7 +45,11 @@ module ADDITIONAL-SYNTAX
 
     syntax Rv ::= MInt{64} | Float | Bool | String | Loc | Array | Record | Object | Null
 
-    syntax Ev ::= Rv | Proc | Func | Class | File
+    syntax Sv ::= Rv | File                                     [owise]
+
+    syntax Dv ::= Rv | Proc | Func | Class
+
+    syntax Ev ::= Dv | Sv
 
     syntax Exp ::= Ev
 
@@ -53,6 +57,13 @@ module ADDITIONAL-SYNTAX
 
     syntax Exp ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
+
+    // used only for isDvs, checks all the Exp in Exps are Dvs
+    syntax Dvs
+    rule isDvs(E:Exp , Es:Exps) => true
+        requires isDv(E) andBool isDvs(Es)
+    rule isDvs(.Exps) => true
+    rule isDvs(_) => false                                      [owise]
 
     // used only for isEvs, checks all the Exp in Exps are Evs
     syntax Evs

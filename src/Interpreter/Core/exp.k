@@ -41,7 +41,7 @@ module EXP
 
     // Record
     syntax KItem ::= createRecordLocs(Record, Ids)
-    rule (record ( ITs )):Exp => createRecordLocs(record(.Map), IdTypeExps2Ids(ITs))   [structural]
+    rule (record ( ITs )):Exp => createRecordLocs(record(.Map), IdTypeExps2Ids(ITs))    [structural]
     rule createRecordLocs(record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
     rule createRecordLocs(Record, .Ids) => Record
 
@@ -57,7 +57,7 @@ module EXP
                 => params(Is, Es) ~> E ~> popE() </k>
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
-            requires isEvs(Es)
+            requires isDvs(Es)
 
     // Recursive Function
     rule recFunc(Is, Env, E) ( Es )
@@ -81,7 +81,7 @@ module EXP
 
     // References Expression
     context ref HOLE:Exp
-    rule <k> ref E:Ev => Loc(!N) ...</k>
+    rule <k> ref E:Sv => Loc(!N) ...</k>
          <store> Store => Store[Loc(!N) <- E] </store>
 
     // Not

@@ -86,7 +86,7 @@ module CLASSES
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env, obj(This)), Rest)) Stack </stack>
          <this> This </this>
-            requires isEvs(Es)
+            requires isDvs(Es)
 
     // Method Function
     rule <k> methodFunc(Is, env(Env'), E, O) ( Es ) ~> Rest
@@ -94,7 +94,7 @@ module CLASSES
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env, obj(This)), Rest)) Stack </stack>
          <this> This </this>
-            requires isEvs(Es)
+            requires isDvs(Es)
 
     // Auxilary Functions
 

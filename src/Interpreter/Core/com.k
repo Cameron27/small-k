@@ -35,7 +35,7 @@ module COM
     rule <k> proc(Is, env(Env'), C) ( Es ) ; ~> Rest => params(Is, Es) ~> C ~> pop() </k>
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
-            requires isEvs(Es)
+            requires isDvs(Es)
 
     // Recursive Procedure
     rule recProc(Is, Env, C) ( Es ) ;
@@ -63,7 +63,7 @@ module COM
     rule <k> escs((I :: Cs Escs), N) => escs(Escs, N) ~> esc(I :: Cs, N) ...</k>    [structural]
     rule escs(.Escs, _) => .                                    [structural]
     // add lables to environment
-    syntax KItem ::= trapLabel(Com, Int)
+    syntax Dv ::= trapLabel(Com, Int)
     rule <k> esc(I :: Cs, N) => . ...</k>
          <env> Env => Env[I <- trapLabel(Cs, N)] </env>
     // resolve an encountered escapeto
