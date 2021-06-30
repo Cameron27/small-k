@@ -152,9 +152,6 @@ module SMALL-SYNTAX
                  | Com ";" Com                                  [right]
     syntax Esc ::= Id "::" Com
     syntax Block ::= "{" Dec ";" Com "}"
-                   | "{" Dec "}"
-                   | "{" Com "}"
-                   | "{" "}"
 
     syntax Dec ::= "class" Id SCDec
                  | "SkipDec"

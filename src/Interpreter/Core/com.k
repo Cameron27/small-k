@@ -95,9 +95,6 @@ module COM
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
 
     // Block
-    rule { } => { SkipDec ; Skip }
-    rule { D:Dec } => { D ; Skip }
-    rule { C:Com } => { SkipDec ; C }
     rule <k> { D:Dec ; C:Com } ~> Rest => D ~> C ~> pop() </k>
          <env> Env </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>   [structural]
