@@ -33,8 +33,6 @@ module TYPE
                   | "TObject" Int
                   | "TObjectAny"
                   | "TNull"
-                  | "TMethod" Type
-                  | "TMethodAny"
                   | "TUnion" Types
                   | "TError"
     syntax Types ::= List{Type, ",,"}
@@ -58,9 +56,14 @@ module TYPE
     rule TObject _ <=Type TObjectAny => true
     rule TNull <=Type TObject _ => true
     rule TNull <=Type TObjectAny => true
-    rule TMethod _ <=Type TMethodAny => true
-    rule T1 <=Type TUnion T2 ,, Ts => T1 <=Type T2 orBool T1 <=Type TUnion Ts
-    rule _ <=Type TUnion .Types => false
+    rule TUnion T1 ,, Ts1 <=Type TUnion T2 ,, Ts2
+        => T1 <=Type TUnion Ts2 andBool
+           TUnion Ts1 <=Type TUnion T2 ,, Ts2
+    rule TUnion .Types <=Type TUnion _ => true
+    rule T1 <=Type TUnion T2 ,, Ts
+        => T1 <=Type T2 orBool
+           T1 <=Type TUnion Ts                                  [priority(170)]
+    rule _ <=Type TUnion .Types => false                        [priority(170)]
     // nested cases
     rule TArray T1 <=Type TArray T2 => T1 <=Type T2
     rule TRecord T1 <=Type TRecord T2 => allIn(T2, map(T1))
@@ -69,7 +72,6 @@ module TYPE
     rule TFile T1 <=Type TFile T2 => T1 <=Type T2
     rule TRef T1 <=Type TRef T2 => T1 <=Type T2
     rule TRefMaybe T1 <=Type TRefMaybe T2 => T1 <=Type T2
-    rule TMethod T1 <=Type TMethod T2 => T1 <=Type T2
     rule T1 <=Type T2 => T1 ==K T2                              [owise]
     // Subtypes Relationship
     syntax Bool ::= Types "<=Types" Types                       [function, functional]

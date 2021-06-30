@@ -22,7 +22,6 @@ module ADDITIONAL-SYNTAX
          <env> _ => Env </env>
          <this> _ => This </this>
 
-
     syntax Array ::= array(MInt{64}, MInt{64}, List)
 
     syntax Record ::= record(Map)

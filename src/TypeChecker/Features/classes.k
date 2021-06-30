@@ -60,12 +60,12 @@ module CLASSES
 
     // Procedure Interface
     context CDecInterface(proc _ ( HOLE ) _)                    [result(IdTypes)]
-    rule CDecInterface(proc I ( ITs ) _ => I |-> TMethod TProc types(ITs))
+    rule CDecInterface(proc I ( ITs ) _ => I |-> TProc types(ITs))
 
     // Function Interface
     context CDecInterface(func _ ( HOLE ) : _ { _ })            [result(IdTypes)]
     context CDecInterface(func _ ( _ ) : (HOLE => teval(HOLE)) { _ })
-    rule CDecInterface(func I ( ITs ) : T { _ } => I |-> TMethod TFunc types(ITs) T)
+    rule CDecInterface(func I ( ITs ) : T { _ } => I |-> TFunc types(ITs) T)
 
     // A chain of scoped class declaration involves checking the first one then checking the second one
     rule SCDec(SCD1 ; SCD2, N) => SCDec(SCD1, N) ~> SCDec(SCD2, N)
@@ -95,14 +95,9 @@ module CLASSES
          <this> This </this>
 
     // Dot
-    rule <k> TObject N . E => E ~> tenvTypeMethod(TEnv) ...</k>
+    rule <k> TObject N . E => E ~> tenvType(TEnv) ...</k>
          <tenv> TEnv => updateMap(TEnv, C) </tenv>
          <classes>... N |-> TClass _ C ...</classes>
-    syntax TEnv ::= tenvTypeMethod(Map)
-    rule <k> TMethod T ~> tenvTypeMethod(TEnv) => T ...</k>
-         <tenv> _ => TEnv </tenv>
-    rule <k> T:Type ~> tenvTypeMethod(TEnv) => T ...</k>
-         <tenv> _ => TEnv </tenv>                               [owise]
 
     // New
     context new HOLE
