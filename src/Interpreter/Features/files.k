@@ -27,14 +27,14 @@ module FILE-OPERATIONS
                     | fileOp2(FileOpName, File, Loc)
                     | fileOp3(FileOpName, List, Int, BufferVal, Loc)
                     | fileRes(List, Int, BufferVal, Loc)
-    syntax BufferVal ::= Dv | "unbound"
+    syntax BufferVal ::= Ev | "unbound"
     context fileOp1(_, HOLE)
     rule <k> fileOp1(Op, FLoc) => fileOp2(Op, {Store[FLoc]}:>File, FLoc) ...</k>
          <store> Store </store>
             requires isFile(Store[FLoc])
     rule <k> fileOp2(Op, file(Es, N, L), FLoc) => fileOp3(Op, Es, N, {Store[L] orDefault unbound}:>BufferVal, FLoc) ...</k>
          <store> Store </store>
-    rule <k> fileRes(Es, N, E:Dv, FLoc) => . ...</k>
+    rule <k> fileRes(Es, N, E:Ev, FLoc) => . ...</k>
          <store> Store => Store[FLoc <- file(Es, N, getBuffer(Store[FLoc]))][getBuffer(Store[FLoc]) <- E] </store>
     rule <k> fileRes(Es, N, unbound, FLoc) => . ...</k>
          <store> Store => Store[FLoc <- file(Es, N, getBuffer(Store[FLoc]))][getBuffer(Store[FLoc]) <- undef] </store>
@@ -62,6 +62,6 @@ module FILE-OPERATIONS
     // Put
     syntax Com ::= put(Exp)
     rule put(E) => fileOp1(putf, E)
-    rule fileOp3(putf, Es, N, E:Dv, FLoc) => fileRes(Es ListItem(E), N +Int 1, unbound, FLoc)
+    rule fileOp3(putf, Es, N, E:Ev, FLoc) => fileRes(Es ListItem(E), N +Int 1, unbound, FLoc)
         requires N ==Int size(Es) +Int 1
 endmodule

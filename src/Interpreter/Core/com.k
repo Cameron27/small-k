@@ -30,12 +30,12 @@ module COM
 
     // Procedure
     context HOLE ( _ ) ;
-    context _:Dv ( HOLE ) ;                                     [result(Dvs)]
+    context _:Ev ( HOLE ) ;                                     [result(Evs)]
     // enter procedure
     rule <k> proc(Is, env(Env'), C) ( Es ) ; ~> Rest => params(Is, Es) ~> C ~> pop() </k>
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
-            requires isDvs(Es)
+            requires isEvs(Es)
 
     // Recursive Procedure
     rule recProc(Is, Env, C) ( Es ) ;
@@ -79,11 +79,11 @@ module COM
     // Return
     context return (HOLE => reval(HOLE)) ;
     // resolve an encounted return
-    rule <k> return E:Dv ; ~> _ => Env ~> E ~> Rest </k>
+    rule <k> return E:Ev ; ~> _ => Env ~> E ~> Rest </k>
          <env>... "return" |-> N ...</env>
          <stack> ListItem(frame(N, Env, Rest)) => .List ...</stack>
     // clear stack until correct stack frame is reached
-    rule <k> return _:Dv ; ...</k>
+    rule <k> return _:Ev ; ...</k>
          <env>... "return" |-> N ...</env>
          <stack> ListItem(frame(M, _, _)) => .List ...</stack>
             requires N =/=Int M

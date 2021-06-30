@@ -46,21 +46,21 @@ module ADDITIONAL-SYNTAX
 
     syntax Rv ::= MInt{64} | Float | Bool | String | Loc | Array | Record | Object | Null
 
-    syntax Dv ::= Rv | Proc | Func | Class | File
+    syntax Ev ::= Rv | Proc | Func | Class | File
 
-    syntax Exp ::= Dv
+    syntax Exp ::= Ev
 
-    syntax KResult ::= Dv
+    syntax KResult ::= Ev
 
     syntax Exp ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
 
-    // used only for isDvs, checks all the Exp in Exps are Dvs
-    syntax Dvs
-    rule isDvs(E:Exp , Es:Exps) => true
-        requires isDv(E) andBool isDvs(Es)
-    rule isDvs(.Exps) => true
-    rule isDvs(_) => false                                      [owise]
+    // used only for isEvs, checks all the Exp in Exps are Evs
+    syntax Evs
+    rule isEvs(E:Exp , Es:Exps) => true
+        requires isEv(E) andBool isEvs(Es)
+    rule isEvs(.Exps) => true
+    rule isEvs(_) => false                                      [owise]
 
     // used to pop the stack
     syntax KItem ::= pop()
@@ -69,7 +69,7 @@ module ADDITIONAL-SYNTAX
 
     // used to pop the stack keeping the denotable value in front
     syntax KItem ::= popE()
-    rule <k> E:Dv ~> popE() => Env ~> E ~> Rest </k>
+    rule <k> E:Ev ~> popE() => Env ~> E ~> Rest </k>
          <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
 
     // used to store frame information

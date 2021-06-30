@@ -11,7 +11,7 @@ module EXP
 
     // Evaluate RVal
     rule reval(E) => #reval(E)
-        requires notBool isDv(E)                                [structural]
+        requires notBool isEv(E)                                [structural]
     rule #reval(E:Rv) => reval(E)
         requires notBool isLoc(E)                               [structural]
     rule <k> #reval(L) => reval(E) ...</k>
@@ -30,8 +30,8 @@ module EXP
          <in> ListItem(S2:String) => .List ...</in>             [owise]
 
     // Array Expression
-    context array [ HOLE => reval(HOLE) : _ ] : _               [result(Dv)]
-    context array [ _:Dv : HOLE => reval(HOLE) ] : _            [result(Dv)]
+    context array [ HOLE => reval(HOLE) : _ ] : _               [result(Ev)]
+    context array [ _:Ev : HOLE => reval(HOLE) ] : _            [result(Ev)]
     syntax KItem ::= createArrayLocs(Array, Int)
     rule array [ N1:MInt{64} : N2:MInt{64} ] : _ => createArrayLocs(array(N1, N2, .List), MInt2Signed(N2) -Int MInt2Signed(N1) +Int 1)
         requires N2 >=sMInt N1                                  [structural]
@@ -52,12 +52,12 @@ module EXP
 
     // Function
     context HOLE:Exp ( _ )
-    context _:Dv ( HOLE )                                       [result(Dvs)]
+    context _:Ev ( HOLE )                                       [result(Evs)]
     rule <k> func(Is, env(Env'), E) ( Es ) ~> Rest
                 => params(Is, Es) ~> E ~> popE() </k>
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
-            requires isDvs(Es)
+            requires isEvs(Es)
 
     // Recursive Function
     rule recFunc(Is, Env, E) ( Es )
@@ -70,8 +70,8 @@ module EXP
          <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
 
     // Array Access
-    context (HOLE:Exp => reval(HOLE)) [ _ ]                     [result(Dv)]
-    context _:Dv [ HOLE => reval(HOLE) ]                        [result(Dv)]
+    context (HOLE:Exp => reval(HOLE)) [ _ ]                     [result(Ev)]
+    context _:Ev [ HOLE => reval(HOLE) ]                        [result(Ev)]
     rule array(N1, N2, List) [ N:MInt{64} ] => List[MInt2Signed(N -MInt N1)] requires N >=sMInt N1 andBool N <=sMInt N2
 
     // Contents
@@ -81,7 +81,7 @@ module EXP
 
     // References Expression
     context ref HOLE:Exp
-    rule <k> ref E:Dv => Loc(!N) ...</k>
+    rule <k> ref E:Ev => Loc(!N) ...</k>
          <store> Store => Store[Loc(!N) <- E] </store>
 
     // Not
@@ -105,6 +105,6 @@ module EXP
 
     // Rules to turn a list of expressions into a list of denotable values
     context HOLE:Exp , _:Exps
-    context _:Dv , HOLE:Exps
-        requires HOLE =/=K .Exps                                [result(Dvs)]
+    context _:Ev , HOLE:Exps
+        requires HOLE =/=K .Exps                                [result(Evs)]
 endmodule

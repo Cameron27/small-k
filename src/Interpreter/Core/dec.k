@@ -46,7 +46,7 @@ module DEC
 
     // Array
     context array _ [ HOLE => reval(HOLE) : _ ] : _ ;
-    context array _ [ _:Dv : HOLE => reval(HOLE) ] : _ ;
+    context array _ [ _:Ev : HOLE => reval(HOLE) ] : _ ;
     syntax KItem ::= createArrayLocs(Id, Array, Int)
     rule array I [ N1:MInt{64} : N2:MInt{64} ] : _ ; => createArrayLocs(I, array(N1, N2, .List), MInt2Signed(N2) -Int MInt2Signed(N1) +Int 1)
         requires N2 >=sMInt N1                                  [structural]

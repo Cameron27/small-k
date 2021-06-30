@@ -38,7 +38,7 @@ module CLASSES
 
     // Array
     context objDec(array _ [ HOLE => reval(HOLE) : _ ] : _ ;)
-    context objDec(array _ [ _:Dv : HOLE => reval(HOLE) ] : _ ;)
+    context objDec(array _ [ _:Ev : HOLE => reval(HOLE) ] : _ ;)
     syntax Dec ::= createArrayLocs(Id, Array, Int)
     rule objDec(array I [ N1:MInt{64} : N2:MInt{64} ] : _ ; => createArrayLocs(I, array(N1, N2, .List), MInt2Signed(N2) -Int MInt2Signed(N1) +Int 1))
         requires N2 >=sMInt N1                                  [structural]
@@ -86,7 +86,7 @@ module CLASSES
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env, obj(This)), Rest)) Stack </stack>
          <this> This </this>
-            requires isDvs(Es)
+            requires isEvs(Es)
 
     // Method Function
     rule <k> methodFunc(Is, env(Env'), E, O) ( Es ) ~> Rest
@@ -94,7 +94,7 @@ module CLASSES
          <env> Env => Env' </env>
          <stack> Stack => ListItem(frame(!_N, env(Env, obj(This)), Rest)) Stack </stack>
          <this> This </this>
-            requires isDvs(Es)
+            requires isEvs(Es)
 
     // Auxilary Functions
 
@@ -114,7 +114,7 @@ module CLASSES
          <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
     rule <k> method(func(Is, Env', E)) ~> popEMethod(O) => Env ~> methodFunc(Is, Env', E, O) ~> Rest </k>
          <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
-    rule <k> E:Dv ~> popEMethod(_) => Env ~> E ~> Rest </k>
+    rule <k> E:Ev ~> popEMethod(_) => Env ~> E ~> Rest </k>
          <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack> [owise]
 endmodule
 
