@@ -23,6 +23,6 @@ module SMALL-INTERPRETER
 
     // Handle exitcode
     rule <k> K </k>
-         <exit-code> E => 1 </exit-code>
-            requires E ==Int 0 andBool K =/=K .                 [priority(1000)]
+         <exit-code> 0 => 1 </exit-code>
+            requires K =/=K .                                   [priority(1000)]
 endmodule

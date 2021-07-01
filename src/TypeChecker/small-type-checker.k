@@ -26,6 +26,6 @@ module SMALL-TYPE-CHECKER
 
     // Handle exitcode
     rule <k> K </k>
-         <exit-code> E => 2 </exit-code>
-            requires E ==Int 0 andBool K =/=K .                 [priority(1000)]
+         <exit-code> 0 => 2 </exit-code>
+            requires K =/=K .                                   [priority(1000)]
 endmodule

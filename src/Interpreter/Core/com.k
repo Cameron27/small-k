@@ -16,17 +16,17 @@ module COM
     // Output
     context output (HOLE => reval(HOLE)) ;
     rule <k> output E:MInt{64} ; => . ...</k>
-         <out> List => List ListItem(MInt2Signed(E)) ListItem("\n") </out>
+         <out>... .List => ListItem(MInt2Signed(E)) ListItem("\n") </out>
     rule <k> output E:Float ; => . ...</k>
-         <out> List => List ListItem(printFloat(E)) ListItem("\n") </out>
+         <out>... .List => ListItem(printFloat(E)) ListItem("\n") </out>
     rule <k> output Loc(I) ; => . ...</k>
-         <out> List => List ListItem("Loc(" +String Int2String(I) +String ")") ListItem("\n") </out>
+         <out>... .List => ListItem("Loc(" +String Int2String(I) +String ")") ListItem("\n") </out>
     rule <k> output true ; => . ...</k>
-         <out> List => List ListItem("true") ListItem("\n") </out>
+         <out>... .List => ListItem("true") ListItem("\n") </out>
     rule <k> output false ; => . ...</k>
-         <out> List => List ListItem("false") ListItem("\n") </out>
+         <out>... .List => ListItem("false") ListItem("\n") </out>
     rule <k> output E:Rv ; => . ...</k>
-         <out> List => List ListItem(E) ListItem("\n") </out>   [owise]
+         <out>... .List => ListItem(E) ListItem("\n") </out>    [owise]
 
     // Procedure
     context HOLE ( _ ) ;
