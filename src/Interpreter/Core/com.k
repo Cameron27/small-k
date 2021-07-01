@@ -32,9 +32,8 @@ module COM
     context HOLE ( _ ) ;
     context _:Ev ( HOLE ) ;                                     [result(Evs)]
     // enter procedure
-    rule <k> proc(Is, env(Env'), C) ( Es ) ; ~> Rest => params(Is, Es) ~> C ~> pop() </k>
+    rule <k> proc(Is, env(Env'), C) ( Es ) ; => params(Is, Es) ~> C ~> env(Env) ...</k>
          <env> Env => Env' </env>
-         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
             requires isDvs(Es)
 
     // Recursive Procedure
@@ -53,51 +52,35 @@ module COM
     rule repeat C until ( E ) =>  C ~> if (! E) repeat C until (E)  [structural]
 
     // Trap
-    syntax KItem ::= escs(Escs, Int)
-                   | esc(Esc, Int)
+    syntax KItem ::= escs(Escs, K, Env)
+                   | esc(Esc, K, Env)
     // enter trap
-    rule <k> trap C Escs ~> Rest => escs(Escs, !N) ~> C ~> pop() </k>
+    rule <k> trap C Escs ~> Rest => escs(Escs, Rest, env(Env)) ~> C ~> env(Env) ~> Rest </k>
          <env> Env </env>
-         <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
     // setup traps to be assigned last to first
-    rule <k> escs((I :: Cs Escs), N) => escs(Escs, N) ~> esc(I :: Cs, N) ...</k>    [structural]
-    rule escs(.Escs, _) => .                                    [structural]
+    rule <k> escs((I :: Cs Escs), K, Env) => escs(Escs, K, Env) ~> esc(I :: Cs, K, Env) ...</k> [structural]
+    rule escs(.Escs, _, _) => .                                 [structural]
     // add lables to environment
-    syntax Dv ::= trapLabel(Com, Int)
-    rule <k> esc(I :: Cs, N) => . ...</k>
-         <env> Env => Env[I <- trapLabel(Cs, N)] </env>
+    rule <k> esc(I :: Cs, K, Env') => . ...</k>
+         <env> Env => Env[I <- cc(Cs ~> K, Env')] </env>
     // resolve an encountered escapeto
-    rule <k> escapeto I ; ~> _ => Env ~> Cs ~> Rest </k>
-         <env>... I |-> trapLabel(Cs, N) ...</env>
-         <stack> ListItem(frame(N, Env, Rest)) => .List ...</stack>
-    // clear stack until correct stack frame is reached
-    rule <k> escapeto I ;  ...</k>
-         <env>... I |-> trapLabel(_, N) ...</env>
-         <stack> ListItem(frame(M, _, _)) => .List ...</stack>
-            requires N =/=Int M                                 [structural]
+    rule <k> escapeto I ; ~> _ => Cc </k>
+         <env>... I |-> Cc:Cc ...</env>
 
     // Return
     context return (HOLE => reval(HOLE)) ;
     // resolve an encounted return
-    rule <k> return E:Ev ; ~> _ => Env ~> E ~> Rest </k>
-         <env>... "return" |-> N ...</env>
-         <stack> ListItem(frame(N, Env, Rest)) => .List ...</stack>
-    // clear stack until correct stack frame is reached
-    rule <k> return _:Ev ; ...</k>
-         <env>... "return" |-> N ...</env>
-         <stack> ListItem(frame(M, _, _)) => .List ...</stack>
-            requires N =/=Int M
+    rule <k> return E:Ev ; ~> _ => E ~> Ec </k>
+         <env>... "return" |-> Ec ...</env>
 
     // With Do
     context with (HOLE => reval(HOLE)) do _
-    rule <k> with record(REnv) do C ~> Rest => C ~> pop() </k>
+    rule <k> with record(REnv) do C => C ~> env(Env) ...</k>
          <env> Env => updateMap(Env, REnv) </env>
-         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
 
     // Block
-    rule <k> { D:Dec ; C:Com } ~> Rest => D ~> C ~> pop() </k>
-         <env> Env </env>
-         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>   [structural]
+    rule <k> { D:Dec ; C:Com } => D ~> C ~> env(Env) ...</k>
+         <env> Env </env>                                       [structural]
 
     // Chain
     rule C1:Com ; C2 => C1 ~> C2                                [structural]

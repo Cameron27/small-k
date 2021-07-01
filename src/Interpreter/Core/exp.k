@@ -47,16 +47,14 @@ module EXP
 
     // Valof
     rule <k> valof : _ B ~> Rest => B ~> "No return encountered" </k>
-         <env> Env => Env["return" <- !N] </env>
-         <stack> Stack => ListItem(frame(!N, env(Env), Rest)) Stack </stack>
+         <env> Env => Env["return" <- ec(Rest, env(Env))] </env>
 
     // Function
     context HOLE:Exp ( _ )
     context _:Ev ( HOLE )                                       [result(Evs)]
-    rule <k> func(Is, env(Env'), E) ( Es ) ~> Rest
-                => params(Is, Es) ~> E ~> popE() </k>
+    rule <k> func(Is, env(Env'), E) ( Es )
+                => params(Is, Es) ~> E ~> envE(Env) ...</k>
          <env> Env => Env' </env>
-         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
             requires isDvs(Es)
 
     // Recursive Function
@@ -65,9 +63,8 @@ module EXP
 
     // Dot
     context (HOLE => reval(HOLE)) . _
-    rule <k> record(REnv) . E ~> Rest => E ~> popE() </k>
+    rule <k> record(REnv) . E => E ~> envE(Env) ...</k>
          <env> Env => updateMap(Env, REnv) </env>
-         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
 
     // Array Access
     context (HOLE:Exp => reval(HOLE)) [ _ ]                     [result(Ev)]

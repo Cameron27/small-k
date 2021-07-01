@@ -66,9 +66,8 @@ module CLASSES
 
     // New
     context new HOLE
-    rule <k> new class(I, N, SCD, env(Env')) ~> Rest => SCD ~> getThis() ~> popE() </k>
+    rule <k> new class(I, N, SCD, env(Env')) => SCD ~> getThis() ~> envE(Env, obj(This)) ...</k>
          <env> Env => Env'[I <- class(I, N, SCD, env(Env'))] </env>
-         <stack> Stack => ListItem(frame(!_, env(Env, obj(This)), Rest)) Stack </stack>
          <this> This => N, .Map, .Map </this>
 
     // This
@@ -76,23 +75,20 @@ module CLASSES
          <this> This </this>
 
     // Dot
-    rule <k> obj(N1, Public , Private) . E ~> Rest => E ~> popEMethod(obj(N1, Public , Private)) </k>
+    rule <k> obj(N1, Public , Private) . E => E ~> envEMethod(Env, obj(N1, Public , Private)) ...</k>
          <env> Env => #if N1 ==Int N2 #then updateMap(updateMap(Env, Public), Private) #else updateMap(Env, Public) #fi </env>
-         <stack> Stack => ListItem(frame(!_N, env(Env), Rest)) Stack </stack>
          <this> N2, _, _ </this>
 
     // Method Procedure
-    rule <k> methodProc(Is, env(Env'), C, O) ( Es ) ; ~> Rest => params(Is, Es) ~> setThis(O) ~> C ~> pop() </k>
+    rule <k> methodProc(Is, env(Env'), C, O) ( Es ) ; => params(Is, Es) ~> setThis(O) ~> C ~> env(Env, obj(This)) ...</k>
          <env> Env => Env' </env>
-         <stack> Stack => ListItem(frame(!_N, env(Env, obj(This)), Rest)) Stack </stack>
          <this> This </this>
             requires isDvs(Es)
 
     // Method Function
-    rule <k> methodFunc(Is, env(Env'), E, O) ( Es ) ~> Rest
-                => params(Is, Es) ~> setThis(O) ~> E ~> popE() </k>
+    rule <k> methodFunc(Is, env(Env'), E, O) ( Es )
+                => params(Is, Es) ~> setThis(O) ~> E ~> envE(Env, obj(This)) ...</k>
          <env> Env => Env' </env>
-         <stack> Stack => ListItem(frame(!_N, env(Env, obj(This)), Rest)) Stack </stack>
          <this> This </this>
             requires isDvs(Es)
 
@@ -108,14 +104,11 @@ module CLASSES
     rule <k> getThis() => obj(This) ...</k>
          <this> This </this>
 
-    // used to pop the stack keeping the denotable value in front and supplying this for methods
-    syntax KItem ::= popEMethod(Object)
-    rule <k> method(proc(Is, Env', C)) ~> popEMethod(O) => Env ~> methodProc(Is, Env', C, O) ~> Rest </k>
-         <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
-    rule <k> method(func(Is, Env', E)) ~> popEMethod(O) => Env ~> methodFunc(Is, Env', E, O) ~> Rest </k>
-         <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack>
-    rule <k> E:Ev ~> popEMethod(_) => Env ~> E ~> Rest </k>
-         <stack> ListItem(frame(_, Env, Rest)) => .List ...</stack> [owise]
+    // used to restore the environment, keeping the denotable value in front and supplying this for methods
+    syntax KItem ::= envEMethod(Map, Object)
+    rule method(proc(Is, Env', C)) ~> envEMethod(Env, O) => env(Env) ~> methodProc(Is, Env', C, O)
+    rule method(func(Is, Env', E)) ~> envEMethod(Env, O) => env(Env) ~> methodFunc(Is, Env', E, O)
+    rule E:Ev ~> envEMethod(Env, _) => env(Env) ~> E            [owise]
 endmodule
 
 module CLASS-OPERATIONS

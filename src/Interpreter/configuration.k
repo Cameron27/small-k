@@ -11,7 +11,6 @@ module CONFIGURATION
         <globalEnv> .Map </globalEnv>
         <store> .Map </store>
         <this> -1 , .Map , .Map </this>
-        <stack> .List </stack>
         <in stream="stdin"> .List </in>
         <out stream="stdout"> .List </out>
         <exit-code exit=""> 0 </exit-code>

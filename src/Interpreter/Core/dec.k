@@ -33,10 +33,9 @@ module DEC
          <env> Env => Env[I <- L] </env>
          <globalEnv>... FL |-> L ...</globalEnv>                [owise]
     // first time evaluation, set exp to be evaluated and reset to default env
-    rule <k> own(I, FL, E) ~> Rest => evalOwn(FL, E) ~> pop() </k>
+    rule <k> own(I, FL, E) => evalOwn(FL, E) ~> env(Env) ~> own(I, FL, E) ...</k>
          <env> Env => defaultEnvironment() </env>
          <globalEnv> GEnv </globalEnv>
-         <stack> Stack => ListItem(frame(!_N, env(Env), own(I, FL, E) ~> Rest)) Stack </stack>
             requires notBool FL in_keys(GEnv)
     // eval the exp and create an binding in the global environment to a location
     context evalOwn(_, (HOLE => reval(HOLE)))
@@ -57,26 +56,26 @@ module DEC
 
     // Record
     syntax KItem ::= createRecordLocs(Id, Record, Ids)
-    rule record I ( ITs ) ; => createRecordLocs(I, record(.Map), IdTypeExps2Ids(ITs))  [structural]
+    rule record I ( ITs ) ; => createRecordLocs(I, record(.Map), IdTypeExps2Ids(ITs))   [structural]
     rule createRecordLocs(_, record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
     rule <k> createRecordLocs(I, Record:Record, .Ids) => . ...</k>
          <env> Env => Env[I <- Record] </env>
 
     // Procedure
     rule <k> proc I(ITs) C => . ...</k>
-         <env> Env => Env[I <- proc(IdTypeExps2Ids(ITs), env(Env), C)] </env>  [structural]
+         <env> Env => Env[I <- proc(IdTypeExps2Ids(ITs), env(Env), C)] </env>   [structural]
 
     // Recursive Procedure
     rule <k> rec proc I(ITs) C => . ...</k>
-         <env> Env => Env[I <- recProc(I , IdTypeExps2Ids(ITs), env(Env), C)] </env>   [structural]
+         <env> Env => Env[I <- recProc(I , IdTypeExps2Ids(ITs), env(Env), C)] </env>    [structural]
 
     // Function
     rule <k> func I(ITs) : _ { E } => . ...</k>
-         <env> Env => Env[I <- func(IdTypeExps2Ids(ITs), env(Env), E)] </env>  [structural]
+         <env> Env => Env[I <- func(IdTypeExps2Ids(ITs), env(Env), E)] </env>   [structural]
 
     // Recursive Function
     rule <k> rec func I(ITs) : _ { E } => . ...</k>
-         <env> Env => Env[I <- recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)] </env>   [structural]
+         <env> Env => Env[I <- recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)] </env>    [structural]
 
     // Chain
     rule D1:Dec ; D2 => D1 ~> D2                                [structural]
