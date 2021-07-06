@@ -5,6 +5,7 @@ requires "Features/classes.k"
 requires "Features/operations.k"
 requires "Features/files.k"
 requires "Features/for.k"
+requires "Features/own.k"
 requires "../Parser/small-syntax.k"
 
 module SMALL-INTERPRETER
@@ -15,10 +16,11 @@ module SMALL-INTERPRETER
     imports OPERATIONS
     imports FILES
     imports FOR
+    imports OWN
     imports SMALL-SYNTAX-CONVERSION
 
     // run program
-    rule <k> program C => C </k>
+    rule <k> program C => own(C) ~> C </k>
          <env> _ => defaultEnvironment() </env>
 
     // Handle exitcode

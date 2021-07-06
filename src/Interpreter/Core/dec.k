@@ -1,14 +1,11 @@
 requires "additional-syntax.k"
 requires "../configuration.k"
-requires "../Features/default-environment.k"
 requires "../../Common/helper.k"
 requires "../helper.k"
 
 module DEC
     imports ADDITIONAL-SYNTAX
     imports CONFIGURATION
-    imports DEFAULT-ENVIRONMENT
-    imports K-LOCATIONS
     imports HELPER
     imports INTERPRETER-HELPER
 
@@ -21,26 +18,6 @@ module DEC
     context var _ : _ = (HOLE => reval(HOLE)) ;
     rule <k> var I : _ = E:Rv ; => . ...</k>
          <env> Env => Env[I <- Loc(!N)] </env>
-         <store> Store => Store[Loc(!N) <- E] </store>
-
-    // Own
-    syntax Dec ::= own(Id, FileLoc, Exp)
-    syntax KItem ::= evalOwn(FileLoc, Exp)
-    syntax FileLoc ::= fileLoc(Int, Int)
-    // the location of the own declaration in the file is is used as the unique identifier for the declaration
-    rule #location(own I : _ = E ;, _, SL, SC, _, _) => own(I, fileLoc(SL, SC), E)
-    rule <k> own(I, FL, _) => . ...</k>
-         <env> Env => Env[I <- L] </env>
-         <globalEnv>... FL |-> L ...</globalEnv>                [owise]
-    // first time evaluation, set exp to be evaluated and reset to default env
-    rule <k> own(I, FL, E) => evalOwn(FL, E) ~> env(Env) ~> own(I, FL, E) ...</k>
-         <env> Env => defaultEnvironment() </env>
-         <globalEnv> GEnv </globalEnv>
-            requires notBool FL in_keys(GEnv)
-    // eval the exp and create an binding in the global environment to a location
-    context evalOwn(_, (HOLE => reval(HOLE)))
-    rule <k> evalOwn(FL, E:Rv) => . ...</k>
-         <globalEnv> GEnv => GEnv[FL <- Loc(!N)] </globalEnv>
          <store> Store => Store[Loc(!N) <- E] </store>
 
     // Array
@@ -63,19 +40,19 @@ module DEC
 
     // Procedure
     rule <k> proc I(ITs) C => . ...</k>
-         <env> Env => Env[I <- proc(IdTypeExps2Ids(ITs), env(Env), C)] </env>   [structural]
+         <env> Env => Env[I <- proc(IdTypeExps2Ids(ITs), env(Env), C)] </env>
 
     // Recursive Procedure
     rule <k> rec proc I(ITs) C => . ...</k>
-         <env> Env => Env[I <- recProc(I , IdTypeExps2Ids(ITs), env(Env), C)] </env>    [structural]
+         <env> Env => Env[I <- recProc(I , IdTypeExps2Ids(ITs), env(Env), C)] </env>
 
     // Function
     rule <k> func I(ITs) : _ { E } => . ...</k>
-         <env> Env => Env[I <- func(IdTypeExps2Ids(ITs), env(Env), E)] </env>   [structural]
+         <env> Env => Env[I <- func(IdTypeExps2Ids(ITs), env(Env), E)] </env>
 
     // Recursive Function
     rule <k> rec func I(ITs) : _ { E } => . ...</k>
-         <env> Env => Env[I <- recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)] </env>    [structural]
+         <env> Env => Env[I <- recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)] </env>
 
     // Chain
     rule D1:Dec ; D2 => D1 ~> D2                                [structural]

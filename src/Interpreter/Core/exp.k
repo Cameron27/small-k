@@ -46,7 +46,7 @@ module EXP
     rule createRecordLocs(Record, .Ids) => Record
 
     // Valof
-    rule <k> valof : _ B ~> Rest => B ~> "No return encountered" </k>
+    rule <k> valof : _ C ~> Rest => C ~> "No return encountered" </k>
          <env> Env => Env["return" <- ec(Rest, env(Env))] </env>
 
     // Function
