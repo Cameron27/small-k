@@ -1,12 +1,8 @@
 requires "additional-syntax.k"
-requires "../configuration.k"
-requires "../../Parser/double.k"
-requires "../../Parser/altint.k"
 requires "../helper.k"
 
 module EXP
     imports ADDITIONAL-SYNTAX
-    imports CONFIGURATION
     imports INTERPRETER-HELPER
 
     // Evaluate RVal

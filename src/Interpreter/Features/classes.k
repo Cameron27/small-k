@@ -1,9 +1,7 @@
-requires "../configuration.k"
 requires "../Core/additional-syntax.k"
 requires "../helper.k"
 
 module CLASSES
-    imports CONFIGURATION
     imports ADDITIONAL-SYNTAX
     imports INTERPRETER-HELPER
 

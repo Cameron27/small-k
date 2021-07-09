@@ -1,9 +1,7 @@
-requires "../configuration.k"
 requires "additional-syntax.k"
 requires "../Features/default-environment.k"
 
 module DEC
-    imports CONFIGURATION
     imports ADDITIONAL-SYNTAX
     imports K-LOCATIONS
     imports DEFAULT-ENVIRONMENT

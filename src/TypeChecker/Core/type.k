@@ -68,7 +68,7 @@ module TYPE
     rule TArray T1 <=Type TArray T2 => T1 <=Type T2
     rule TRecord T1 <=Type TRecord T2 => allIn(T2, map(T1))
     rule TProc Ts1 <=Type TProc Ts2 => Ts2 <=Types Ts1
-    rule TFunc Ts1 T1<=Type TFunc Ts2 T2 => Ts2 <=Types Ts1 andBool T1 <=Type T2
+    rule TFunc Ts1 T1 <=Type TFunc Ts2 T2 => Ts2 <=Types Ts1 andBool T1 <=Type T2
     rule TFile T1 <=Type TFile T2 => T1 <=Type T2
     rule TRef T1 <=Type TRef T2 => T1 <=Type T2
     rule TRefMaybe T1 <=Type TRefMaybe T2 => T1 <=Type T2

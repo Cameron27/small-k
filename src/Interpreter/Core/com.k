@@ -1,10 +1,8 @@
 requires "additional-syntax.k"
-requires "../configuration.k"
 requires "../../Common/helper.k"
 
 module COM
     imports ADDITIONAL-SYNTAX
-    imports CONFIGURATION
     imports HELPER
 
     // Assign

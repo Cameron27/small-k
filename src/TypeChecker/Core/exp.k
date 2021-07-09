@@ -1,8 +1,6 @@
-requires "../configuration.k"
 requires "additional-syntax.k"
 
 module EXP
-    imports CONFIGURATION
     imports ADDITIONAL-SYNTAX
 
     // Evaluate RVal

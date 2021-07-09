@@ -1,8 +1,6 @@
-requires "../configuration.k"
 requires "additional-syntax.k"
 
 module COM
-    imports CONFIGURATION
     imports ADDITIONAL-SYNTAX
 
     // Assignment

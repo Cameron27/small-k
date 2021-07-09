@@ -1,9 +1,7 @@
-requires "../configuration.k"
 requires "../Core/additional-syntax.k"
 requires "../../Common/helper.k"
 
 module FOR
-    imports CONFIGURATION
     imports ADDITIONAL-SYNTAX
     imports HELPER
 

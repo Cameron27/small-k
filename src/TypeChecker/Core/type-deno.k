@@ -1,9 +1,7 @@
 requires "additional-syntax.k"
-requires "../configuration.k"
 
 module TYPE-DENO
     imports ADDITIONAL-SYNTAX
-    imports CONFIGURATION
 
     // Eval type
     syntax TevalResult ::= Id | Type
@@ -20,7 +18,7 @@ module TYPE-DENO
     rule array of T => TArray TRef T
 
     // Record
-    context (record ( HOLE )):TypeExp                          [result(IdTypes)]
+    context (record ( HOLE )):TypeExp                           [result(IdTypes)]
     rule (record ( ITs:IdTypes )):TypeExp => TRecord referAll(ITs)
         requires allDifferent(ids(ITs)) andBool referAll(ITs) =/=K ITError
 
@@ -51,7 +49,7 @@ module TYPE-DENO
 
     // TypeExps Conversion
     context ((HOLE => teval(HOLE)) , _):TypeExps
-    context (_ , HOLE):TypeExps                                [result(Types)]
+    context (_ , HOLE):TypeExps                                 [result(Types)]
     rule (T:Type , Ts:Types):TypeExps => T ,, Ts
     rule .TypeExps => .Types
 

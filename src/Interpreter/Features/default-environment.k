@@ -1,10 +1,8 @@
-requires "../Core/additional-syntax.k"
 requires "../../Common/helper.k"
 requires "files.k"
 requires "classes.k"
 
 module DEFAULT-ENVIRONMENT
-    imports ADDITIONAL-SYNTAX
     imports FILE-OPERATIONS
     imports CLASS-OPERATIONS
     imports HELPER

@@ -1,11 +1,9 @@
 requires "additional-syntax.k"
-requires "../configuration.k"
 requires "../../Common/helper.k"
 requires "../helper.k"
 
 module DEC
     imports ADDITIONAL-SYNTAX
-    imports CONFIGURATION
     imports HELPER
     imports INTERPRETER-HELPER
 

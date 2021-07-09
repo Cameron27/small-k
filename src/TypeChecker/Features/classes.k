@@ -1,8 +1,6 @@
-requires "../configuration.k"
 requires "../Core/additional-syntax.k"
 
 module CLASSES
-    imports CONFIGURATION
     imports ADDITIONAL-SYNTAX
 
     // Class
