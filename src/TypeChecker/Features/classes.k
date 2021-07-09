@@ -1,7 +1,10 @@
 requires "../Core/additional-syntax.k"
+requires "default-environment.k"
 
 module CLASSES
     imports ADDITIONAL-SYNTAX
+    imports DEFAULT-ENVIRONMENT
+    imports ID
 
     // Class
     syntax KItem ::= SCDecInterface(SCDec, Map, Map) // Scoped class declarations, public mapping, private mapping - produce class interface
@@ -103,6 +106,11 @@ module CLASSES
 
     // Null
     rule null => TNull
+
+    // Update default environment
+    rule defaultEnvironment(List => List ListItem(2), Env => Env
+        String2Id("isNull") |-> TFunc (TUnion (TRef TObjectAny ,, TObjectAny) ,, .Types) TBool)
+        requires notBool 2 in List
 
     // Auxilary Functions
 

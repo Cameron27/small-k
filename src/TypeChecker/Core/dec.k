@@ -43,12 +43,6 @@ module DEC
          <tenv> TEnv => TEnv[I <- TRecord referAll(ITs)] </tenv>
             requires allDifferent(ids(ITs)) andBool referAll(ITs) =/=K ITError
 
-    // File
-    context file _ withbuffer _ : (HOLE => teval(HOLE)) ;
-    rule <k> file I1 withbuffer I2 : T ; => . ...</k>
-         <tenv> TEnv => TEnv[I2 <- refer(T)][I1 <- refer(TFile T)] </tenv>
-            requires refer(T) =/=K TError
-
     // Procedure
     context proc _ ( HOLE ) _                                   [result(IdTypes)]
     rule <k> proc I ( ITs ) C => C ~> tenv(TEnv[I <- TProc types(ITs)]) ...</k>

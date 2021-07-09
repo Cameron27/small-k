@@ -1,9 +1,11 @@
 requires "../Core/additional-syntax.k"
 requires "../helper.k"
+requires "default-environment.k"
 
 module CLASSES
     imports ADDITIONAL-SYNTAX
     imports INTERPRETER-HELPER
+    imports DEFAULT-ENVIRONMENT
 
     // Class
     rule <k> class I SCD => . ...</k>
@@ -90,6 +92,18 @@ module CLASSES
          <this> This </this>
             requires isDvs(Es)
 
+    // Is Null
+    syntax Exp ::= isNullF(Exp)
+    context isNullF(HOLE)
+    rule isNullF(E:Object) => isNull(E)
+    rule <k> isNullF(L:Loc) => isNull(E) ...</k>
+         <store>... L |-> E:Object ...</store>
+
+    // Update default environment
+    rule defaultEnvironment(List => List ListItem(2), Env => Env
+        String2Id("isNull") |-> func(!E , .Ids, env(.Map), isNullF(!E)))
+        requires notBool 2 in List
+
     // Auxilary Functions
 
     // used to set this
@@ -107,14 +121,4 @@ module CLASSES
     rule method(proc(Is, Env', C)) ~> envEMethod(Env, O) => env(Env) ~> methodProc(Is, Env', C, O)
     rule method(func(Is, Env', E)) ~> envEMethod(Env, O) => env(Env) ~> methodFunc(Is, Env', E, O)
     rule E:Ev ~> envEMethod(Env, _) => env(Env) ~> E            [owise]
-endmodule
-
-module CLASS-OPERATIONS
-    imports ADDITIONAL-SYNTAX
-
-    syntax Exp ::= isNullF(Exp)
-    context isNullF(HOLE)
-    rule isNullF(E:Object) => isNull(E)
-    rule <k> isNullF(L:Loc) => isNull(E) ...</k>
-         <store>... L |-> E:Object ...</store>
 endmodule

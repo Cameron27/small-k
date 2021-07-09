@@ -5,6 +5,7 @@ requires "Core/type-deno.k"
 requires "Features/operations.k"
 requires "Features/default-environment.k"
 requires "Features/classes.k"
+requires "Features/files.k"
 requires "../Parser/small-syntax.k"
 
 module SMALL-TYPE-CHECKER
@@ -18,6 +19,7 @@ module SMALL-TYPE-CHECKER
     imports INT
     imports SMALL-SYNTAX-CONVERSION
     imports CLASSES
+    imports FILES
 
     // run program
     rule <k> program C => C </k>

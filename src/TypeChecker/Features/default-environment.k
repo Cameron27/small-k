@@ -1,15 +1,9 @@
-requires "../Core/type.k"
-
 module DEFAULT-ENVIRONMENT
-    imports TYPE
-    imports ID
+    imports LIST
+    imports MAP
 
     syntax Map ::= defaultEnvironment()                         [function]
-    rule defaultEnvironment() =>
-        String2Id("reset") |-> TProc TRef TFileAny
-        String2Id("rewrite") |-> TProc TRef TFileAny
-        String2Id("get") |-> TProc TRef TFileAny
-        String2Id("put") |-> TProc TRef TFileAny
-        String2Id("eof") |-> TFunc TRef TFileAny TBool
-        String2Id("isNull") |-> TFunc (TUnion (TRef TObjectAny ,, TObjectAny) ,, .Types) TBool
+                 | defaultEnvironment(List, Map)                [function]
+    rule defaultEnvironment() => defaultEnvironment(.List, .Map)
+    rule defaultEnvironment(_, Env) => Env                      [owise]
 endmodule
