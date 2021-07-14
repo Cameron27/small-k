@@ -10,7 +10,7 @@ module COM
         requires T2 assignable T1
 
     // Block
-    rule <k> { D:Dec ; C:Com } => D ~> C ~> tenv(TEnv) ...</k>
+    rule <k> { D:Dec C:Com } => D ~> C ~> tenv(TEnv) ...</k>
          <tenv> TEnv </tenv>
 
     // Output
@@ -66,7 +66,7 @@ module COM
          <tenv> TEnv => updateMap(TEnv, map(Escs)) </tenv>
     rule Esc:Esc Escs => Esc ~> Escs                            [structural]
     rule .Escs => .                                             [structural]
-    rule _ :: C => C                                            [structural]
+    rule _ : C:Com => C                                         [structural]
 
     // Escape
     syntax KItem ::= escape(Exp)
@@ -86,7 +86,7 @@ module COM
          <tenv> TEnv => updateMap(TEnv, map(ITs)) </tenv>
 
     // Chain
-    rule C1:Com ; C2 => C1 ~> C2                                [structural]
+    rule C1:Com C2 => C1 ~> C2                                  [structural]
 
     // Skip
     rule Skip => .                                              [structural]

@@ -42,7 +42,7 @@ module OWN
     rule own(escapeto _ ;) => .
     rule own(return E1 ;) => own(E1)
     rule own(with E1 do C1) => own(E1) ~> own(C1)
-    rule own(C1:Com ; C2) => own(C1) ~> own(C2)
+    rule own(C1:Com C2) => own(C1) ~> own(C2)
     rule own(Skip) => .
 
     // For
@@ -52,9 +52,9 @@ module OWN
     rule own(F1:For , F2) => own(F1) ~> own(F2)
 
     // Escs/Esc
-    rule own(Esc Escs) => own(Esc) ~> own(Escs)
+    rule own(Esc:Esc Escs) => own(Esc) ~> own(Escs)
     rule own(.Escs) => .
-    rule own(_ :: C1) => own(C1)
+    rule own(_ : C1) => own(C1)
 
     // Dec
     rule own(const _ : _ = E1 ;) => own(E1)
@@ -67,15 +67,15 @@ module OWN
     rule own(func _ ( _ ) : _ { E1 }) => own(E1)
     rule own(rec func _ ( _ ) : _ { E1 }) => own(E1)
     rule own(class _ SCD1) => own(SCD1)
-    rule own({ C1 ; D1 }) => own(C1) ~> own(D1)
-    rule own(D1:Dec ; D2) => own(D1) ~> own(D2)
+    rule own({ C1 D1 }) => own(C1) ~> own(D1)
+    rule own(D1:Dec D2) => own(D1) ~> own(D2)
     rule own(SkipDec) => .
 
     // SCDec
     rule own(public D1) => own(D1)
     rule own(private D1) => own(D1)
     rule own(SkipSCDec) => .
-    rule own(SCD1:SCDec ; SCD2) => own(SCD1) ~> own(SCD2)
+    rule own(SCD1:SCDec SCD2) => own(SCD1) ~> own(SCD2)
 
     // Exp
     rule own(array [ E1 : E2 ] : _) => own(E1) ~> own(E2)

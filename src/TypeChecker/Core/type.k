@@ -171,7 +171,7 @@ module TYPE
                  | map(Escs)                                    [function]
     rule map(I : T ,, ITs) => updateMap(map(ITs), I |-> T)
     rule map(.IdTypes) => .Map
-    rule map(I :: _ Escs) => updateMap(map(Escs), I |-> TEscape)
+    rule map(I : _ Escs) => updateMap(map(Escs), I |-> TEscape)
     rule map(.Escs) => .Map
 
     // Check all Ids are different

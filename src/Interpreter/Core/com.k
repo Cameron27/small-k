@@ -44,7 +44,7 @@ module COM
     rule if ( false ) _ else C => C
 
     // While
-    rule while (E) C => if (E) (C ; while (E) C)                [structural]
+    rule while (E) C => if (E) (C while (E) C)                  [structural]
 
     // Repeat
     rule repeat C until ( E ) =>  C ~> if (! E) repeat C until (E)  [structural]
@@ -56,10 +56,10 @@ module COM
     rule <k> trap C Escs ~> Rest => escs(Escs, Rest, env(Env)) ~> C ~> env(Env) ~> Rest </k>
          <env> Env </env>
     // setup traps to be assigned last to first
-    rule <k> escs((I :: Cs Escs), K, Env) => escs(Escs, K, Env) ~> esc(I :: Cs, K, Env) ...</k> [structural]
+    rule <k> escs((I : Cs Escs), K, Env) => escs(Escs, K, Env) ~> esc(I : Cs, K, Env) ...</k>   [structural]
     rule escs(.Escs, _, _) => .                                 [structural]
     // add lables to environment
-    rule <k> esc(I :: Cs, K, Env') => . ...</k>
+    rule <k> esc(I : Cs, K, Env') => . ...</k>
          <env> Env => Env[I <- cc(Cs ~> K, Env')] </env>
     // resolve an encountered escapeto
     rule <k> escapeto I ; ~> _ => Cc </k>
@@ -77,11 +77,11 @@ module COM
          <env> Env => updateMap(Env, REnv) </env>
 
     // Block
-    rule <k> { D:Dec ; C:Com } => D ~> C ~> env(Env) ...</k>
+    rule <k> { D:Dec C:Com } => D ~> C ~> env(Env) ...</k>
          <env> Env </env>                                       [structural]
 
     // Chain
-    rule C1:Com ; C2 => C1 ~> C2                                [structural]
+    rule C1:Com C2 => C1 ~> C2                                  [structural]
 
     // Skip
     rule Skip => .                                              [structural]

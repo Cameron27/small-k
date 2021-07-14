@@ -69,7 +69,7 @@ module DEC
          <tenv> TEnv => updateMap(TEnv, map( I : TFunc types(ITs) T ,, ITs)) </tenv>
 
     // Chain
-    rule D1:Dec ; D2 => D1 ~> D2                                [structural]
+    rule D1:Dec D2 => D1 ~> D2                                  [structural]
 
     // Skip
     rule SkipDec => .

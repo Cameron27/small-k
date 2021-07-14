@@ -149,18 +149,18 @@ module SMALL-SYNTAX
 
     syntax Com ::= "trap" Com Escs
                  | "Skip"
-                 | Com ";" Com                                  [right]
-    syntax Esc ::= Id "::" Com
-    syntax Block ::= "{" Dec ";" Com "}"
+                 | Com Com                                      [right]
+    syntax Esc ::= Id ":" Com
+    syntax Block ::= "{" Dec Com "}"
 
     syntax Dec ::= "class" Id SCDec
                  | "SkipDec"
-                 | Dec ";" Dec                                  [right]
+                 | Dec Dec                                      [right]
 
     syntax SCDec ::= "public" Dec
                    | "private" Dec
                    | "SkipSCDec"
-                   | SCDec ";" SCDec                            [right]
+                   | SCDec SCDec                                [right]
 
     syntax Exp ::= MInt{64}
                  | Float
@@ -189,25 +189,27 @@ module SMALL-SYNTAX-CONVERSION
     rule class I { SCDs } => class I convertSCDecs(SCDs)        [anywhere]
 
     // Convert Id in new to an Exp
-    rule new I ( ) => new I
+    rule new I ( ) => new I                                     [anywhere]
 
     // Convert syntax that uses Coms or Decs to a version that does not
-    rule { Ds:Decs Cs:Coms } => { convertDecs(Ds) ; convertComs(Cs) }   [anywhere]
-    rule I : C:Coms => I :: convertComs(C)                      [anywhere]
+    rule `{__}_SMALL-SYNTAX-PARSED_Block_Decs_Coms`(Ds, Cs) =>
+        `{__}_SMALL-SYNTAX_Block_Dec_Com`(convertDecs(Ds), convertComs(Cs)) [anywhere]
+    rule `_:__SMALL-SYNTAX-PARSED_Esc_Id_Coms`(I, Cs) =>
+        `_:__SMALL-SYNTAX_Esc_Id_Com`(I, convertComs(Cs))       [anywhere]
 
     // Convert uses of Coms to chains
     syntax Com ::= convertComs(Coms)                            [function]
-    rule convertComs(C Cs) => C ; convertComs(Cs)
+    rule convertComs(C Cs) => C convertComs(Cs)
     rule convertComs(.Coms) => Skip
 
     // Convert uses of Decs to chains
     syntax Dec ::= convertDecs(Decs)                            [function]
-    rule convertDecs(D Ds) => D ; convertDecs(Ds)
+    rule convertDecs(D Ds) => D convertDecs(Ds)
     rule convertDecs(.Decs) => SkipDec
 
     // Convert uses of SCDecs to chains
     syntax SCDec ::= convertSCDecs(SCDecs)                      [function]
-    rule convertSCDecs(SCD SCDs) => convertSCDec(SCD) ; convertSCDecs(SCDs)
+    rule convertSCDecs(SCD SCDs) => convertSCDec(SCD) convertSCDecs(SCDs)
     rule convertSCDecs(.SCDecs) => SkipSCDec
 
     // Convert SCDec to from CDec versions to Dec versions

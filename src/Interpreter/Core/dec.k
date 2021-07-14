@@ -53,7 +53,7 @@ module DEC
          <env> Env => Env[I <- recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)] </env>
 
     // Chain
-    rule D1:Dec ; D2 => D1 ~> D2                                [structural]
+    rule D1:Dec D2 => D1 ~> D2                                  [structural]
 
     // Skip
     rule SkipDec => .

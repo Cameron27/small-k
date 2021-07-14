@@ -25,7 +25,7 @@ module CLASSES
     rule SCDecInterface(private M' => SkipSCDec, _, M => updateMap(M, M'))
 
     // A chain of scoped class declaration involves checking the first one then checking the second one
-    rule SCDecInterface(SCD1 ; SCD2, M1, M2) => SCDecInterface(SCD1, M1, M2) ~> SCDecInterface(SCD2, .Map, .Map)
+    rule SCDecInterface(SCD1 SCD2, M1, M2) => SCDecInterface(SCD1, M1, M2) ~> SCDecInterface(SCD2, .Map, .Map)
 
     // A SkipDec can be emiminated from the front with the mappings and declarations to check later being carried forward
     rule SCDecInterface(SkipSCDec, M1, M2) ~> SCDecInterface(SCD, .Map, .Map) => SCDecInterface(SCD, M1, M2)
@@ -69,7 +69,7 @@ module CLASSES
     rule CDecInterface(func I ( ITs ) : T { _ } => I |-> TFunc types(ITs) T)
 
     // A chain of scoped class declaration involves checking the first one then checking the second one
-    rule SCDec(SCD1 ; SCD2, N) => SCDec(SCD1, N) ~> SCDec(SCD2, N)
+    rule SCDec(SCD1 SCD2, N) => SCDec(SCD1, N) ~> SCDec(SCD2, N)
 
     // Public or private do not matter, just check the class declaration
     syntax KItem ::= CDec(Dec, Int)

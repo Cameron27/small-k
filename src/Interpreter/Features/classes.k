@@ -22,7 +22,7 @@ module CLASSES
     rule private D => objDec(D) ~> private
 
     // Chain
-    rule SCD1:SCDec ; SCD2 => SCD1 ~> SCD2                      [structural]
+    rule SCD1:SCDec SCD2 => SCD1 ~> SCD2                        [structural]
 
     // Skip
     rule SkipSCDec => .
