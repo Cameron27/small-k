@@ -19,8 +19,8 @@ module COM
         requires isPrintable(T)
 
     // Procedure
-    context HOLE:Exp ( _:Exps ) ;
-    context _:Exp ( HOLE:Exps ) ;                               [result(Types)]
+    context HOLE:Acc ( _:Exps ) ;
+    context _:Acc ( HOLE:Exps ) ;                               [result(Types)]
     rule TProc Ts1 ( Ts2 ) ; => .
         requires Ts2 <=Types Ts1
 

@@ -44,8 +44,8 @@ module EXP
          <returnType> RT => T </returnType>
 
     // Function
-    context HOLE:Exp ( _:Exps )
-    context _:Exp ( HOLE:Exps )                                 [result(Types)]
+    context HOLE:Acc ( _:Exps )
+    context _:Acc ( HOLE:Exps )                                 [result(Types)]
     rule TFunc Ts1 T ( Ts2 ) => T
         requires Ts2 <=Types Ts1
 
@@ -55,8 +55,8 @@ module EXP
          <tenv> TEnv => updateMap(TEnv, map(ITs)) </tenv>
 
     // Array Access
-    context (HOLE => reval(HOLE)):Exp [ _ ]                     [result(Type)]
-    context _:Exp [ (HOLE => reval(HOLE)) ]                     [result(Type)]
+    context (HOLE => reval(HOLE)):Acc [ _ ]                     [result(Type)]
+    context _:Acc [ (HOLE => reval(HOLE)) ]                     [result(Type)]
     rule TArray T [ TInt ] => T
 
     // Content
@@ -88,6 +88,9 @@ module EXP
     context _ ? _ : HOLE
     rule TBool ? T1 : T2 => tryMerge(T1, T2)
         requires tryMerge(T1, T2) =/=K TError
+
+    // Brackets
+    rule brackets(E) => E
 
     // Exps Conversion
     context (HOLE , _):Exps

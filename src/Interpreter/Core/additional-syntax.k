@@ -64,11 +64,11 @@ module ADDITIONAL-SYNTAX
 
     syntax Ev ::= Dv | Sv
 
-    syntax Exp ::= Ev
+    syntax Acc ::= Ev
 
     syntax KResult ::= Ev
 
-    syntax Exp ::= reval(Exp)
+    syntax Acc ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
 
     // used only for isDvs, checks all the Exp in Exps are Dvs

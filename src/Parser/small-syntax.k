@@ -12,7 +12,7 @@ module SMALL-SYNTAX-COMMON
 
     syntax Com ::= Exp "=" Exp ";"
                  | "output" Exp ";"
-                 | Exp "(" Exps ")" ";"
+                 | Acc "(" Exps ")" ";"
                  | "if" "(" Exp ")" Com "else" Com
                  | "if" "(" Exp ")" Com                         [prefer]
                  | "while" "(" Exp ")" Com
@@ -45,7 +45,7 @@ module SMALL-SYNTAX-COMMON
     syntax Own ::= "own" Id ":" TypeExp "=" Exp ";"
     syntax Ids ::= List{Id, ","}
 
-    syntax Exp ::= Bool
+    syntax Acc ::= Bool
                  | String
                  | Id
                  | "read"
@@ -54,11 +54,11 @@ module SMALL-SYNTAX-COMMON
                  | "array" "[" Exp ":" Exp "]" ":" TypeExp
                  | "record" "(" IdTypeExps ")"
                  | "valof" ":" TypeExp Block
-                 | "(" Exp ")"                                  [bracket]
                  > left:
-                   Exp "(" Exps ")"
-                 | Exp "." Exp
-                 | Exp "[" Exp "]"
+                   Acc "(" Exps ")"
+                 | Acc "." Acc
+                 | Acc "[" Exp "]"
+    syntax Exp ::= Acc
                  > "cont" Exp
                  | "ref" Exp
                  | "!" Exp
@@ -135,10 +135,11 @@ module SMALL-SYNTAX-PARSED
                   | "array" Id "[" Exp ":" Exp "]" ":" TypeExp ";"
                   | "record" Id "(" IdTypeExps ")" ";"
 
-    syntax Exp ::= Int
+    syntax Acc ::= Int
                  | AltInt
                  | Double
                  | "new" Id "(" ")"
+                 | "(" Exp ")"
 endmodule
 
 // Syntax additional to the common syntax to complete the extended syntax
@@ -162,9 +163,10 @@ module SMALL-SYNTAX
                    | "SkipSCDec"
                    | SCDec SCDec                                [right]
 
-    syntax Exp ::= MInt{64}
+    syntax Acc ::= MInt{64}
                  | Float
                  | "new" Exp
+                 | brackets(Exp)
     syntax MInt{64}
 
     syntax TypeExp ::= typeInfer(Exp)
@@ -190,6 +192,9 @@ module SMALL-SYNTAX-CONVERSION
 
     // Convert Id in new to an Exp
     rule new I ( ) => new I                                     [anywhere]
+
+    // Convert brackets
+    rule ( E ):Exp => brackets(E)                               [anywhere]
 
     // Convert syntax that uses Coms or Decs to a version that does not
     rule `{__}_SMALL-SYNTAX-PARSED_Block_Decs_Coms`(Ds, Cs) =>

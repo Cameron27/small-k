@@ -7,12 +7,12 @@ module ADDITIONAL-SYNTAX
     imports CONFIGURATION
     imports TYPE
 
-    syntax Exp ::= Type
+    syntax Acc ::= Type
     syntax Exps ::= Types
 
     syntax KResult ::= Type
 
-    syntax Exp ::= reval(Exp)
+    syntax Acc ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
 
     syntax TypeExp ::= teval(TypeExp)

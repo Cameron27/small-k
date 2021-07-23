@@ -80,7 +80,7 @@ module OWN
     // Exp
     rule own(array [ E1 : E2 ] : _) => own(E1) ~> own(E2)
     rule own(valof : _ C1) => own(C1)
-    rule own(E1:Exp ( Es )) => own(E1) ~> own(Es)
+    rule own(E1:Acc ( Es )) => own(E1) ~> own(Es)
     rule own(E1 . E2) => own(E1) ~> own(E2)
     rule own(E1 [ E2 ]) => own(E1) ~> own(E2)
     rule own(cont E1) => own(E1)
@@ -103,6 +103,7 @@ module OWN
     rule own(E1 ^ E2) => own(E1) ~> own(E2)
     rule own(E1 | E2) => own(E1) ~> own(E2)
     rule own(E1 ? E2 : E3) => own(E1) ~> own(E2) ~> own(E3)
+    rule own(brackets(E)) => own(E)
     rule own(_:Exp) => .                                        [owise] // All other expressions
 
     // Exps

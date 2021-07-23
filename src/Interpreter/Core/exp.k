@@ -46,7 +46,7 @@ module EXP
          <env> Env => Env["return" <- ec(Rest, env(Env))] </env>
 
     // Function
-    context HOLE:Exp ( _ )
+    context HOLE:Acc ( _ )
     context _:Ev ( HOLE )                                       [result(Evs)]
     rule <k> func(Is, env(Env'), E) ( Es )
                 => params(Is, Es) ~> E ~> envE(Env) ...</k>
@@ -63,7 +63,7 @@ module EXP
          <env> Env => updateMap(Env, REnv) </env>
 
     // Array Access
-    context (HOLE:Exp => reval(HOLE)) [ _ ]                     [result(Ev)]
+    context (HOLE:Acc => reval(HOLE)) [ _ ]                     [result(Ev)]
     context _:Ev [ HOLE => reval(HOLE) ]                        [result(Ev)]
     rule array(N1, N2, List) [ N:MInt{64} ] => List[MInt2Signed(N -MInt N1)] requires N >=sMInt N1 andBool N <=sMInt N2
 
@@ -95,6 +95,9 @@ module EXP
     context (HOLE => reval(HOLE)) ? _ : _
     rule true ? E : _ => E
     rule false ? _ : E => E
+
+    // Brackets
+    rule brackets(E) => E
 
     // Rules to turn a list of expressions into a list of denotable values
     context HOLE:Exp , _:Exps
