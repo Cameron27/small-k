@@ -4,13 +4,11 @@ module CONFIGURATION
     imports SMALL-SYNTAX
     imports MAP
 
-    syntax ObjMap ::= Int "," Map "," Map
-
     configuration <T>
         <env> .Map </env>
         <globalEnv> .Map </globalEnv>
         <store> .Map </store>
-        <this> -1 , .Map , .Map </this>
+        <this> .Map </this>
         <in stream="stdin"> .List </in>
         <out stream="stdout"> .List </out>
         <exit-code exit=""> 0 </exit-code>

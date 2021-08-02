@@ -45,7 +45,7 @@ module ADDITIONAL-SYNTAX
 
     syntax Class ::= class(Id, Int, SCDec, Env)
 
-    syntax Object ::= obj(ObjMap) | Null
+    syntax Object ::= obj(Map) | Null
 
     syntax Method ::= method(Proc)
                     | method(Func)

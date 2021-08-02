@@ -1,11 +1,11 @@
 requires "../../Parser/small-syntax.k"
 requires "../configuration.k"
-requires "type.k"
+requires "subtype.k"
 
 module ADDITIONAL-SYNTAX
     imports SMALL-SYNTAX
     imports CONFIGURATION
-    imports TYPE
+    imports SUBTYPE
 
     syntax Acc ::= Type
     syntax Exps ::= Types

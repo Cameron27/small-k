@@ -11,7 +11,7 @@ module CLASSES
                    | SCDec(SCDec, Int) // Scoped class declarations, class' object id - type check SCDs
                    | end(Id, Int, SCDec) // Identifier of class, classes object id, scoped class declarations - mark end of SCDecInterface
     // Type check the scoped class declarations then create the class, for now assumes the class has no mapping
-    rule class I SCDs => createClass(I, !N, .Map) ~> SCDecInterface(SCDs, .Map, .Map) ~> end(I, !N, SCDs)
+    rule class I SCDs => createClass(I, !N, -1, .Map) ~> SCDecInterface(SCDs, .Map, .Map) ~> end(I, !N, SCDs)
 
     // Turn the class declaration in the scoped class declaration into a map (what identifiers need to be bound to what
     // types), the class declarations will be properlly type checked later when the type of the class is known
@@ -32,9 +32,10 @@ module CLASSES
 
     // One the last scoped class declaration has been checked, check all the declarations with all the class mappings
     // then then remove the private mappings for the rest of the program
-    rule <k> SCDecInterface(SkipSCDec, M1, M2) ~> end(I, N, SCDs) => createClass(I, N, updateMap(M1, M2)) ~> SCDec(SCDs, N) ~> createClass(I, N, M1) ~> setThis(This) ~> returnType(ReturnType) ...</k>
+    rule <k> SCDecInterface(SkipSCDec, M1, M2) ~> end(I, N, SCDs) => createClass(I, N, -1, updateMap(M1, M2)) ~> SCDec(SCDs, N) ~> createClass(I, N, -1, M1) ~> setThis(This) ~> returnType(ReturnType) ...</k>
          <this> This => -1 </this>
          <returnType> ReturnType => TVoid </returnType>
+            requires size(intersectSet(keys(M1), keys(M2))) ==Int 0
 
     // Constant Interface
     context CDecInterface(const _ : (HOLE => teval(HOLE)) = _ ;)
@@ -98,11 +99,11 @@ module CLASSES
     // Dot
     rule <k> TObject N . E => E ~> tenvType(TEnv) ...</k>
          <tenv> TEnv => updateMap(TEnv, C) </tenv>
-         <classes>... N |-> TClass _ C ...</classes>
+         <classes>... N |-> TClass _ _ C ...</classes>
 
     // New
     context new HOLE
-    rule new TClass N _ => TObject N
+    rule new TClass N _ _ => TObject N
 
     // Null
     rule null => TNull
@@ -123,8 +124,8 @@ module CLASSES
     rule <k> useThis(N, K) => K ~> setThis(This) ...</k>
          <this> This => N </this>
 
-    syntax KItem ::= createClass(Id, Int, Map)
-    rule <k> createClass(I, N, M) => . ...</k>
-         <tenv> TEnv => TEnv[I <- TClass N M] </tenv>
-         <classes> Classes => Classes[N <- TClass N M] </classes>
+    syntax KItem ::= createClass(Id, Int, Int, Map)
+    rule <k> createClass(I, N1, N2, M) => . ...</k>
+         <tenv> TEnv => TEnv[I <- TClass N1 N2 M] </tenv>
+         <classes> Classes => Classes[N1 <- TClass N1 N2 M] </classes>
 endmodule

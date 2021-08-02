@@ -41,7 +41,7 @@ module TYPE-DENO
 
     // Class
     rule <k> teval(I:Id => TObject N) ...</k>
-         <tenv>... I |-> TClass N _ ...</tenv>
+         <tenv>... I |-> TClass N _ _ ...</tenv>
 
     // Type Infer
     context typeInfer(HOLE => reval(HOLE))
