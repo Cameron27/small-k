@@ -44,6 +44,7 @@ module ADDITIONAL-SYNTAX
     syntax File ::= file(List, Int, Loc)
 
     syntax Class ::= class(Id, Int, SCDec, Env)
+                   | class(Id, Int, Class, SCDec, Env)
 
     syntax Object ::= obj(Map) | Null
 

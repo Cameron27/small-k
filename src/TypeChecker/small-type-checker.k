@@ -24,7 +24,7 @@ module SMALL-TYPE-CHECKER
     // run program
     rule <k> program C => C </k>
          <tenv> _ => defaultEnvironment() </tenv>
-         <classes> _ => -1 |-> TClass -1 -1 .Map </classes>
+         <classes> _ => -1 |-> TClass -1 -1 .Map .Map </classes>
 
     // Handle exitcode
     rule <k> K </k>

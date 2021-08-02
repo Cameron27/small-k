@@ -28,7 +28,7 @@ module TYPE
                   | "TRefMaybe" Type
                   | "TEscape"
                   | "TVoid"
-                  | "TClass" Int Int Map
+                  | "TClass" Int Int Map Map
                   | "TClassAny"
                   | "TObject" Int
                   | "TObjectAny"

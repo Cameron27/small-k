@@ -10,6 +10,9 @@ module CLASSES
     // Class
     rule <k> class I SCD => . ...</k>
          <env> Env => Env[I <- class(I, !_, SCD, env(Env["return" <- undef]))] </env>
+    rule <k> class I1 extends I2 SCD => . ...</k>
+         <env> Env => Env[I1 <- class(I1, !_, {Env[I2]}:>Class, SCD, env(Env["return" <- undef]))] </env>
+            requires isClass(Env[I2])
 
     syntax KItem ::= objDec(Dec)
     rule public CD => objDec(CD)
@@ -64,6 +67,9 @@ module CLASSES
     context new HOLE
     rule <k> new class(I, N, SCD, env(Env')) => obj(.Map) ~> SCD ~> envE(Env, obj(This)) ...</k>
          <env> Env => Env'[I <- class(I, N, SCD, env(Env'))] </env>
+         <this> This => .Map </this>
+    rule <k> new class(I, N, C, SCD, env(Env')) => new C ~> envE(Env'[I <- class(I, N, C, SCD, env(Env'))]) ~> SCD ~> envE(Env, obj(This)) ...</k>
+         <env> Env </env>
          <this> This => .Map </this>
 
     // This

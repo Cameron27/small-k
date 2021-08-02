@@ -120,6 +120,7 @@ module SMALL-SYNTAX-PARSED
     syntax Block ::= "{" Decs Coms "}"
 
     syntax Dec ::= "class" Id "{" SCDecs "}"
+                 | "class" Id "extends" Id "{" SCDecs "}"
     syntax Decs ::= List{Dec, ""}
 
     syntax SCDec ::= "public" CDec
@@ -155,6 +156,7 @@ module SMALL-SYNTAX
     syntax Block ::= "{" Dec Com "}"
 
     syntax Dec ::= "class" Id SCDec
+                 | "class" Id "extends" Id SCDec
                  | "SkipDec"
                  | Dec Dec                                      [right]
 
@@ -189,6 +191,7 @@ module SMALL-SYNTAX-CONVERSION
 
     // Covert CDecs in class to Decs
     rule class I { SCDs } => class I convertSCDecs(SCDs)        [anywhere]
+    rule class I1 extends I2 { SCDs } => class I1 extends I2 convertSCDecs(SCDs)    [anywhere]
 
     // Convert Id in new to an Exp
     rule new I ( ) => new I                                     [anywhere]

@@ -67,6 +67,7 @@ module OWN
     rule own(func _ ( _ ) : _ { E1 }) => own(E1)
     rule own(rec func _ ( _ ) : _ { E1 }) => own(E1)
     rule own(class _ SCD1) => own(SCD1)
+    rule own(class _ extends _ SCD1) => own(SCD1)
     rule own({ C1 D1 }) => own(C1) ~> own(D1)
     rule own(D1:Dec D2) => own(D1) ~> own(D2)
     rule own(SkipDec) => .

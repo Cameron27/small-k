@@ -14,7 +14,7 @@ module SUBTYPE
     rule TFunc _ _ <=Type TFuncAny => true
     rule TFile _ <=Type TFileAny => true
     rule TRef _ <=Type TRefAny => true
-    rule TClass _ _ _ <=Type TClassAny => true
+    rule TClass _ _ _ _ <=Type TClassAny => true
     rule TObject _ <=Type TObjectAny => true
     rule TNull <=Type TObject _ => true
     rule TNull <=Type TObjectAny => true
@@ -38,7 +38,7 @@ module SUBTYPE
     rule TObject _ <=Type TObject -1 => true                    [priority(160)]
     rule TObject -1 <=Type TObject _ => false                   [priority(170)]
     rule [[ TObject N1 <=Type TObject N2 => N12 ==Int N2 orBool TObject N12 <=Type TObject N2 ]]
-         <classes>... N1 |-> TClass _ N12 _ ...</classes>       [priority(180)]
+         <classes>... N1 |-> TClass _ N12 _ _ ...</classes>     [priority(180)]
     rule T1 <=Type T2 => T1 ==K T2                              [owise]
     // Subtypes Relationship
     syntax Bool ::= Types "<=Types" Types                       [function, functional]
@@ -73,6 +73,12 @@ module SUBTYPE
     rule tryMerge(T1, T2) => maxType(T1, T2)
         requires T1 <=>Type T2                                  [priority(190)]
     rule tryMerge(_, _) => TError                               [priority(200)]
+
+    // Check that for all identifiers in the set the corresponding type in the first map is a subtype of the
+    // corresponding type in the second map
+    syntax Bool ::= allSubset(Set, Map, Map)                    [function]
+    rule allSubset(SetItem(I:Id) S, E1, E2) => {E1[I]}:>Type <=Type {E2[I]}:>Type andBool allSubset(S, E1, E2)
+    rule allSubset(.Set, _, _) => true
 
     // Check all IdTypes are in the map from Ids to Types
     syntax Bool ::= allIn(IdTypes, Map)                         [function]
