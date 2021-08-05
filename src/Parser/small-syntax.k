@@ -170,8 +170,6 @@ module SMALL-SYNTAX
                  | "new" Exp
                  | brackets(Exp)
     syntax MInt{64}
-
-    syntax TypeExp ::= typeInfer(Exp)
 endmodule
 
 // Applies various conversions to go from the parsed syntax to the extended syntax

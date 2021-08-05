@@ -43,10 +43,6 @@ module TYPE-DENO
     rule <k> teval(I:Id => TObject N) ...</k>
          <tenv>... I |-> TClass N _ _ _ ...</tenv>
 
-    // Type Infer
-    context typeInfer(HOLE => reval(HOLE))
-    rule typeInfer(T:Type) => T
-
     // TypeExps Conversion
     context ((HOLE => teval(HOLE)) , _):TypeExps
     context (_ , HOLE):TypeExps                                 [result(Types)]
