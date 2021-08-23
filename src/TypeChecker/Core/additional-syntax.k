@@ -26,8 +26,8 @@ module ADDITIONAL-SYNTAX
     rule <k> T:Type ~> tenvType(TEnv) => T ...</k>
          <tenv> _ => TEnv </tenv>
 
-    syntax KItem ::= returnType(Type)
     // Set return type
-    rule <k> returnType(T) => . ...</k>
+    syntax KItem ::= setReturnType(Type)
+    rule <k> setReturnType(T) => . ...</k>
          <returnType> _ => T </returnType>
 endmodule

@@ -36,7 +36,11 @@ module CLASSES
     // Once the last scoped class declaration has been checked, check all the declarations with all the class mappings
     // then remove the private mappings for the rest of the program
     rule <k> SCDecInterface(SkipSCDec, Epub, Epriv) ~> end(I, O, SCDs) =>
-            createClass(I, O, -1, updateMap(Epub, Epriv), Epriv) ~> SCDec(SCDs, O) ~> createClass(I, O, -1, Epub, Epriv) ~> setThis(This) ~> returnType(ReturnType) ...</k>
+            createClass(I, O, -1, updateMap(Epub, Epriv), Epriv) ~>
+            SCDec(SCDs, O) ~>
+            createClass(I, O, -1, Epub, Epriv) ~>
+            setThis(This) ~>
+            setReturnType(ReturnType) ...</k>
          <this> This => -1 </this>
          <returnType> ReturnType => TVoid </returnType>
             requires size(intersectSet(keys(Epub), keys(Epriv))) ==Int 0
@@ -46,7 +50,7 @@ module CLASSES
             SCDec(SCDs, O1) ~>
             createClass(I, O1, O2, updateMap(E2pub, Epub), updateMap(E2priv, Epriv)) ~>
             setThis(This) ~>
-            returnType(ReturnType) ...</k>
+            setReturnType(ReturnType) ...</k>
          <this> This => -1 </this>
          <returnType> ReturnType => TVoid </returnType>
             requires

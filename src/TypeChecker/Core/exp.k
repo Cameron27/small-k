@@ -40,7 +40,7 @@ module EXP
 
     // Valof
     context valof : (HOLE => teval(HOLE)) _
-    rule <k> valof : T:Type C => C ~> returnType(RT) ~> T ...</k>
+    rule <k> valof : T:Type C => C ~> setReturnType(RT) ~> T ...</k>
          <returnType> RT => T </returnType>
 
     // Function
