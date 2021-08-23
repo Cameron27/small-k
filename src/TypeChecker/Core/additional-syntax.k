@@ -15,18 +15,19 @@ module ADDITIONAL-SYNTAX
     syntax Acc ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
 
+    // Evaluate type
     syntax TypeExp ::= teval(TypeExp)
 
     syntax TEnv ::= tenv(Map)
                   | tenvType(Map)
-    // restore environment
+    // Restore environment
     rule <k> tenv(TEnv) => . ...</k>
          <tenv> _ => TEnv </tenv>
     rule <k> T:Type ~> tenvType(TEnv) => T ...</k>
          <tenv> _ => TEnv </tenv>
 
     syntax KItem ::= returnType(Type)
-    // set return type
+    // Set return type
     rule <k> returnType(T) => . ...</k>
          <returnType> _ => T </returnType>
 endmodule

@@ -29,9 +29,9 @@ module COM
     // Procedure
     context HOLE ( _ ) ;
     context _:Ev ( HOLE ) ;                                     [result(Evs)]
-    // enter procedure
-    rule <k> proc(Is, env(Env'), C) ( Es ) ; => params(Is, Es) ~> C ~> env(Env) ...</k>
-         <env> Env => Env' </env>
+    // Enter procedure
+    rule <k> proc(Is, Env', C) ( Es ) ; => Env' ~> updateLocals(Is, Es) ~> C ~> env(Env) ...</k>
+         <env> Env </env>
             requires isDvs(Es)
 
     // Recursive Procedure
@@ -52,29 +52,29 @@ module COM
     // Trap
     syntax KItem ::= escs(Escs, K, Env)
                    | esc(Esc, K, Env)
-    // enter trap
+    // Enter trap
     rule <k> trap C Escs ~> Rest => escs(Escs, Rest, env(Env)) ~> C ~> env(Env) ~> Rest </k>
          <env> Env </env>
-    // setup traps to be assigned last to first
+    // Setup traps to be assigned last to first
     rule <k> escs((I : Cs Escs), K, Env) => escs(Escs, K, Env) ~> esc(I : Cs, K, Env) ...</k>   [structural]
     rule escs(.Escs, _, _) => .                                 [structural]
-    // add lables to environment
+    // Add lables to environment
     rule <k> esc(I : Cs, K, Env') => . ...</k>
-         <env> Env => Env[I <- cc(Cs ~> K, Env')] </env>
-    // resolve an encountered escapeto
+         <localEnv> Env => Env[I <- cc(Cs ~> K, Env')] </localEnv>
+    // Resolve an encountered escapeto
     rule <k> escapeto I ; ~> _ => Cc </k>
-         <env>... I |-> Cc:Cc ...</env>
+         <localEnv>... I |-> Cc:Cc ...</localEnv>
 
     // Return
     context return (HOLE => reval(HOLE)) ;
-    // resolve an encounted return
+    // Eesolve an encounted return
     rule <k> return E:Ev ; ~> _ => E ~> Ec </k>
-         <env>... "return" |-> Ec ...</env>
+         <return> Ec </return>
 
     // With Do
     context with (HOLE => reval(HOLE)) do _
-    rule <k> with record(REnv) do C => C ~> env(Env) ...</k>
-         <env> Env => updateMap(Env, REnv) </env>
+    rule <k> with record(REnv) do C => updateLocal(REnv) ~> C ~> env(Env) ...</k>
+         <env> Env </env>
 
     // Block
     rule <k> { D:Dec C:Com } => D ~> C ~> env(Env) ...</k>

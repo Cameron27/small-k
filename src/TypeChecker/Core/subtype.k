@@ -7,7 +7,7 @@ module SUBTYPE
 
     // Subtype Relationship
     syntax Bool ::= Type "<=Type" Type                          [function, functional]
-    // any cases
+    // Any cases
     rule TArray _ <=Type TArrayAny => true
     rule TRecord _ <=Type TRecordAny => true
     rule TProc _ <=Type TProcAny => true
@@ -26,7 +26,7 @@ module SUBTYPE
         => T1 <=Type T2 orBool
            T1 <=Type TUnion Ts                                  [priority(170)]
     rule _ <=Type TUnion .Types => false                        [priority(170)]
-    // nested cases
+    // Nested cases
     rule TArray T1 <=Type TArray T2 => T1 <=Type T2
     rule TRecord T1 <=Type TRecord T2 => allIn(T2, map(T1))
     rule TProc Ts1 <=Type TProc Ts2 => Ts2 <=Types Ts1

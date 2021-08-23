@@ -8,10 +8,10 @@ module OWN
 
     // Own
     syntax FileLoc ::= fileLoc(Int, Int)
-    // the location of the own declaration in the file is is used as the unique identifier for the declaration
+    // The location of the own declaration in the file is is used as the unique identifier for the declaration
     rule <k> #location(own I : _ = _ ;, _, SL, SC, _, _) => . ...</k>
-         <env> Env => Env[I <- L] </env>
-         <globalEnv>... fileLoc(SL, SC) |-> L ...</globalEnv>   [owise]
+         <localEnv> Env => Env[I <- L] </localEnv>
+         <globalEnv>... fileLoc(SL, SC) |-> L ...</globalEnv>
 
     syntax KItem ::= own(Com)
                    | own(For)

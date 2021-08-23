@@ -5,8 +5,8 @@ module DEFAULT-ENVIRONMENT
     imports LIST
     imports MAP
 
-    syntax Map ::= defaultEnvironment()                         [function]
-                 | defaultEnvironment(List, Map)                [function]
-    rule defaultEnvironment() => defaultEnvironment(.List, .Map)
-    rule defaultEnvironment(_, Env) => Env                      [owise]
+    syntax Map ::= defaultLocalEnvironment()                    [function]
+                 | defaultLocalEnvironment(List, Map)           [function]
+    rule defaultLocalEnvironment() => defaultLocalEnvironment(.List, .Map)
+    rule defaultLocalEnvironment(_, Env) => Env                 [owise]
 endmodule

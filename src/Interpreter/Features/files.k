@@ -7,7 +7,7 @@ module FILES
 
     // File
     rule <k> file F withbuffer B : _ ; => . ...</k>
-         <env> Env => Env[B <- Loc(!B)][F <- Loc(!F)] </env>
+         <localEnv> Env => Env[B <- Loc(!B)][F <- Loc(!F)] </localEnv>
          <store> Store => Store[Loc(!F) <- file(.List, 1, Loc(!B))] </store>
 
     // Eof
@@ -73,11 +73,11 @@ module FILES
         requires N ==Int size(Es) +Int 1
 
     // Update default environment
-    rule defaultEnvironment(List => List ListItem(1), Env => Env
-        String2Id("reset") |-> proc(!E , .Ids, env(.Map), reset(!E))
-        String2Id("rewrite") |-> proc(!E , .Ids, env(.Map), rewrite(!E))
-        String2Id("get") |-> proc(!E , .Ids, env(.Map), get(!E))
-        String2Id("put") |-> proc(!E , .Ids, env(.Map), put(!E))
-        String2Id("eof") |-> func(!E , .Ids, env(.Map), eof(!E)))
+    rule defaultLocalEnvironment(List => List ListItem(1), Env => Env
+        String2Id("reset") |-> proc(!E , .Ids, emptyLocal(), reset(!E))
+        String2Id("rewrite") |-> proc(!E , .Ids, emptyLocal(), rewrite(!E))
+        String2Id("get") |-> proc(!E , .Ids, emptyLocal(), get(!E))
+        String2Id("put") |-> proc(!E , .Ids, emptyLocal(), put(!E))
+        String2Id("eof") |-> func(!E , .Ids, emptyLocal(), eof(!E)))
         requires notBool 1 in List
 endmodule

@@ -8,7 +8,7 @@ module FOR
     // For Expression
     context for ( _ = (HOLE => reval(HOLE)) ) _
     rule <k> for ( I = E:Rv ) C => C ...</k>
-         <env>... I |-> L:Loc ...</env>
+         <localEnv>... I |-> L:Loc ...</localEnv>
          <store> Store => Store[L <- E] </store>
 
     // While
@@ -16,7 +16,7 @@ module FOR
     context whileFor(_, (HOLE => reval(HOLE)), _, _)
     context whileFor(_, _:Rv, (HOLE => reval(HOLE)), _)
     rule <k> for ( I = E1 while E2 ) C => whileFor(L, E1, E2, C ~> for ( I = E1 while E2 ) C) ...</k>
-         <env>... I |-> L ...</env>
+         <localEnv>... I |-> L ...</localEnv>
             requires isLoc(L)                                   [structural]
     rule <k> whileFor(L, E:Rv, true, C) => C ...</k>
          <store> Store => Store[L <- E] </store>
@@ -29,8 +29,7 @@ module FOR
     context stepFor(_, _, (HOLE => reval(HOLE)), _, _, _)
     context stepFor(_, _, _:Rv, (HOLE => reval(HOLE)), _, _)
     rule <k> for ( I = N:MInt{64} step E1 until E2 ) C => stepFor(L, N, E1, E2, C, for ( I = N step E1 until E2 ) C) ...</k>
-         <env>... I |-> L ...</env>
-            requires isLoc(L)                                   [structural]
+         <localEnv>... I |-> L:Loc ...</localEnv>               [structural]
     rule <k> stepFor(L, N:MInt{64}, N1:MInt{64}, N2:MInt{64}, C1, C2) => C1 ~> insertN(N +MInt N1, C2) ...</k>
          <store> Store => Store[L <- N] </store>
             requires ((N -MInt N2):MInt{64} *MInt sign(N1)):MInt{64} <sMInt 1p64

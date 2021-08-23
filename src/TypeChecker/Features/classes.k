@@ -132,7 +132,7 @@ module CLASSES
 
     // Auxilary Functions
 
-    // use to set this
+    // Use to set this
     syntax KItem ::= setThis(Int)
     rule <k> setThis(This) => . ...</k>
          <this> _ => This </this>

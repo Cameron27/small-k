@@ -8,10 +8,32 @@ module CLASSES
     imports DEFAULT-ENVIRONMENT
 
     // Class
-    rule <k> class I SCD => . ...</k>
-         <env> Env => Env[I <- class(I, !_, SCD, env(Env["return" <- undef]))] </env>
-    rule <k> class I1 extends I2 SCD => . ...</k>
-         <env> Env => Env[I1 <- class(I1, !_, {Env[I2]}:>Class, SCD, env(Env["return" <- undef]))] </env>
+    rule <k> class I SCD => updateLocal(I, class(I, !_, SCD,
+            env(<env>-fragment
+                <localEnv> Env </localEnv>
+                <globalEnv> GEnv </globalEnv>
+                <return> no return </return>
+                <this> .Map </this>
+            </env>-fragment))) ...</k>
+         <env>
+            <localEnv> Env </localEnv>
+            <globalEnv> GEnv </globalEnv>
+            <return> _ </return>
+            <this> _ </this>
+         </env>
+    rule <k> class I1 extends I2 SCD => updateLocal(I1, class(I1, !_, {Env[I2]}:>Class, SCD,
+            env(<env>-fragment
+                <localEnv> Env </localEnv>
+                <globalEnv> GEnv </globalEnv>
+                <return> no return </return>
+                <this> .Map </this>
+            </env>-fragment))) ...</k>
+         <env>
+            <localEnv> Env </localEnv>
+            <globalEnv> GEnv </globalEnv>
+            <return> _ </return>
+            <this> _ </this>
+         </env>
             requires isClass(Env[I2])
 
     syntax KItem ::= objDec(Dec)
@@ -65,32 +87,29 @@ module CLASSES
 
     // New
     context new HOLE
-    rule <k> new class(I, N, SCD, env(Env')) => obj(.Map) ~> SCD ~> envE(Env, obj(This)) ...</k>
-         <env> Env => Env'[I <- class(I, N, SCD, env(Env'))] </env>
-         <this> This => .Map </this>
-    rule <k> new class(I, N, C, SCD, env(Env')) => new C ~> envE(Env'[I <- class(I, N, C, SCD, env(Env'))]) ~> SCD ~> envE(Env, obj(This)) ...</k>
+    rule <k> new class(I, N, SCD, Env') => Env' ~> updateLocal(I, class(I, N, SCD, Env')) ~> obj(.Map) ~> SCD ~> envE(Env) ...</k>
          <env> Env </env>
-         <this> This => .Map </this>
+    rule <k> new class(I, N, C, SCD, env(Env')) => new C ~> envE(Env') ~> updateLocalE(I, class(I, N, C, SCD, env(Env'))) ~> SCD ~> envE(Env) ...</k>
+         <env> Env </env>
 
     // This
     rule <k> this => obj(This) ...</k>
          <this> This </this>
 
     // Dot
-    rule <k> obj(M) . E => E ~> envEMethod(Env, obj(M)) ...</k>
-         <env> Env => updateMap(Env, M) </env>
+    rule <k> obj(M) . E => updateLocal(M) ~> E ~> envEMethod(Env, obj(M)) ...</k>
+         <env> Env </env>
 
     // Method Procedure
-    rule <k> methodProc(Is, env(Env'), C, O) ( Es ) ; => params(Is, Es) ~> setThis(O) ~> C ~> env(Env, obj(This)) ...</k>
+    rule <k> methodProc(Is, env(Env'), C, O) ( Es ) ; =>
+            updateLocals(Is, Es) ~> setThis(O) ~> C ~> env(Env) ...</k>
          <env> Env => Env' </env>
-         <this> This </this>
             requires isDvs(Es)
 
     // Method Function
-    rule <k> methodFunc(Is, env(Env'), E, O) ( Es )
-                => params(Is, Es) ~> setThis(O) ~> E ~> envE(Env, obj(This)) ...</k>
+    rule <k> methodFunc(Is, env(Env'), E, O) ( Es ) =>
+            updateLocals(Is, Es) ~> setThis(O) ~> E ~> envE(Env) ...</k>
          <env> Env => Env' </env>
-         <this> This </this>
             requires isDvs(Es)
 
     // Is Null
@@ -101,19 +120,14 @@ module CLASSES
          <store>... L |-> E:Object ...</store>
 
     // Update default environment
-    rule defaultEnvironment(List => List ListItem(2), Env => Env
-        String2Id("isNull") |-> func(!E , .Ids, env(.Map), isNullF(!E)))
+    rule defaultLocalEnvironment(List => List ListItem(2), Env => Env
+        String2Id("isNull") |-> func(!E , .Ids, emptyLocal(), isNullF(!E)))
         requires notBool 2 in List
 
     // Auxilary Functions
 
-    // used to set this
-    syntax KItem ::= setThis(Object)
-    rule <k> setThis(obj(This)) => . ...</k>
-         <this> _ => This </this>
-
-    // used to restore the environment, keeping the denotable value in front and supplying this for methods
-    syntax KItem ::= envEMethod(Map, Object)
+    // Restores the environment, keeping the denotable value in front and supplying this for methods
+    syntax KItem ::= envEMethod(KItem, Object)
     rule method(proc(Is, Env', C)) ~> envEMethod(Env, O) => env(Env) ~> methodProc(Is, Env', C, O)
     rule method(func(Is, Env', E)) ~> envEMethod(Env, O) => env(Env) ~> methodFunc(Is, Env', E, O)
     rule E:Ev ~> envEMethod(Env, _) => env(Env) ~> E            [owise]

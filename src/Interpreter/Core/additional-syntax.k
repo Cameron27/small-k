@@ -13,22 +13,20 @@ module ADDITIONAL-SYNTAX
 
     syntax Loc ::= Loc(Int)
 
-    syntax Env ::= env(Map)
-                 | envE(Map)
-                 | env(Map, Object)
-                 | envE(Map, Object)
-    // restore environment
+    // Environments
+    syntax Env ::= env(KItem)
+                 | envE(KItem)
+                 | emptyLocal()
+    // Restore environment
     rule <k> env(Env) => . ...</k>
          <env> _ => Env </env>
     rule <k> E:Ev ~> envE(Env) => E ...</k>
          <env> _ => Env </env>
-    rule <k> env(Env, obj(This)) => . ...</k>
-         <env> _ => Env </env>
-         <this> _ => This </this>
-    rule <k> E:Ev ~> envE(Env, obj(This)) => E ...</k>
-         <env> _ => Env </env>
-         <this> _ => This </this>
+    // Set local environment to empty
+    rule <k> emptyLocal() => . ...</k>
+         <localEnv> _ => .Map </localEnv>
 
+    // Various types of values
     syntax Array ::= array(MInt{64}, MInt{64}, List)
 
     syntax Record ::= record(Map)
@@ -51,12 +49,17 @@ module ADDITIONAL-SYNTAX
     syntax Method ::= method(Proc)
                     | method(Func)
 
+    // Command contiunuation
     syntax Cc ::= cc(K, Env)
+    // Restore environment and run remaining
     rule cc(K, Env) => Env ~> K
 
+    // Expression contiunuation
     syntax Ec ::= ec(K, Env)
+    // Restore environment and run remaining using E
     rule E:Ev ~> ec(K, Env) => Env ~> E ~> K
 
+    // Compound types
     syntax Rv ::= MInt{64} | Float | Bool | String | Loc | Array | Record | Object | Null
 
     syntax Sv ::= Rv | File                                     [owise]
@@ -69,33 +72,54 @@ module ADDITIONAL-SYNTAX
 
     syntax KResult ::= Ev
 
+    // Evaluate right-hand value
     syntax Acc ::= reval(Exp)
                  | #reval(Exp)                                  [strict]
+    rule reval(E) => #reval(E)
+        requires notBool isEv(E)                                [structural]
+    rule #reval(E:Rv) => reval(E)
+        requires notBool isLoc(E)                               [structural]
+    rule <k> #reval(L) => reval(E) ...</k>
+         <store>... L |-> E:Rv ...</store>
 
-    // used only for isDvs, checks all the Exp in Exps are Dvs
+    // Used only for isDvs, checks all the Exp in Exps are Dvs
     syntax Dvs
     rule isDvs(E:Exp , Es:Exps) => true
         requires isDv(E) andBool isDvs(Es)
     rule isDvs(.Exps) => true
     rule isDvs(_) => false                                      [owise]
 
-    // used only for isEvs, checks all the Exp in Exps are Evs
+    // Used only for isEvs, checks all the Exp in Exps are Evs
     syntax Evs
     rule isEvs(E:Exp , Es:Exps) => true
         requires isEv(E) andBool isEvs(Es)
     rule isEvs(.Exps) => true
     rule isEvs(_) => false                                      [owise]
 
-    // used to store frame information
-    syntax KItem ::= frame(Int, Env, K)
+    // Updates the local environment
+    syntax KItem ::= updateLocals(Ids, Exps)
+                   | updateLocal(Id, Exp)
+                   | updateLocalE(Id, Exp)
+                   | updateLocal(Map)
+    // Setup values to be assigned last to first
+    rule updateLocals(I , Is, E , Es) => updateLocals(Is, Es) ~> updateLocal(I, E)  [structural]
+    rule updateLocals(.Ids, .Exps) => .                         [structural]
+    // Assign values to local environment
+    rule <k> updateLocal(I, E) => . ...</k>
+         <localEnv> Env => Env[I <- E] </localEnv>
+    rule <k> E1:Ev ~> updateLocalE(I, E) => E1 ...</k>
+         <localEnv> Env => Env[I <- E] </localEnv>
+    // Update local environment with map
+    rule <k> updateLocal(M) => . ...</k>
+         <localEnv> Env => updateMap(Env, M) </localEnv>
 
-    // used to assign a list of parameters to a list of identifiers
-    syntax KItem ::= params(Ids, Exps)
-                   | param(Id, Exp)
-    // setup params to be assigned last to first
-    rule params(I , Is, E , Es) => params(Is, Es) ~> param(I, E)    [structural]
-    rule params(.Ids, .Exps) => .                               [structural]
-    // assign parameter to environment
-    rule <k> param(I, E) => . ...</k>
-         <env> Env => Env[I <- E] </env>
+    // Set return address
+    syntax KItem ::= setReturn(Ec)
+    rule <k> setReturn(Ec) => . ...</k>
+         <return> _ => Ec </return>
+
+    // Set this object
+    syntax KItem ::= setThis(Object)
+    rule <k> setThis(obj(This)) => . ...</k>
+         <this> _ => This </this>
 endmodule

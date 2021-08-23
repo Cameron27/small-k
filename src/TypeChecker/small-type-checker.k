@@ -21,7 +21,7 @@ module SMALL-TYPE-CHECKER
     imports CLASSES
     imports FILES
 
-    // run program
+    // Run program
     rule <k> program C => C </k>
          <tenv> _ => defaultEnvironment() </tenv>
          <classes> _ => -1 |-> TClass -1 -1 .Map .Map </classes>

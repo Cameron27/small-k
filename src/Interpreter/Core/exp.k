@@ -5,17 +5,9 @@ module EXP
     imports ADDITIONAL-SYNTAX
     imports INTERPRETER-HELPER
 
-    // Evaluate RVal
-    rule reval(E) => #reval(E)
-        requires notBool isEv(E)                                [structural]
-    rule #reval(E:Rv) => reval(E)
-        requires notBool isLoc(E)                               [structural]
-    rule <k> #reval(L) => reval(E) ...</k>
-         <store>... L |-> E:Rv ...</store>
-
     // Identifier
     rule <k> I:Id => E ...</k>
-         <env>... I |-> E ...</env>
+         <localEnv>... I |-> E ...</localEnv>
 
     // Read
     syntax KItem ::= #read(String)
@@ -42,15 +34,15 @@ module EXP
     rule createRecordLocs(Record, .Ids) => Record
 
     // Valof
-    rule <k> valof : _ C ~> Rest => C ~> "No return encountered" </k>
-         <env> Env => Env["return" <- ec(Rest, env(Env))] </env>
+    rule <k> valof : _ C ~> Rest => setReturn(ec(Rest, env(Env))) ~> C ~> "No return encountered" </k>
+         <env> Env </env>
 
     // Function
     context HOLE:Acc ( _ )
     context _:Ev ( HOLE )                                       [result(Evs)]
-    rule <k> func(Is, env(Env'), E) ( Es )
-                => params(Is, Es) ~> E ~> envE(Env) ...</k>
-         <env> Env => Env' </env>
+    rule <k> func(Is, Env', E:Exp) ( Es )
+                => Env' ~> updateLocals(Is, Es) ~> E ~> envE(Env) ...</k>
+         <env> Env </env>
             requires isDvs(Es)
 
     // Recursive Function
@@ -59,8 +51,8 @@ module EXP
 
     // Dot
     context (HOLE => reval(HOLE)) . _
-    rule <k> record(REnv) . E => E ~> envE(Env) ...</k>
-         <env> Env => updateMap(Env, REnv) </env>
+    rule <k> record(REnv) . E => updateLocal(REnv) ~> E ~> envE(Env) ...</k>
+         <env> Env </env>
 
     // Array Access
     context (HOLE:Acc => reval(HOLE)) [ _ ]                     [result(Ev)]

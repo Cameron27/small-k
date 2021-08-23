@@ -19,9 +19,9 @@ module SMALL-INTERPRETER
     imports OWN
     imports SMALL-SYNTAX-CONVERSION
 
-    // run program
+    // Run program
     rule <k> program C => own(C) ~> C </k>
-         <env> _ => defaultEnvironment() </env>
+         <localEnv> _ => defaultLocalEnvironment() </localEnv>
 
     // Handle exitcode
     rule <k> K </k>

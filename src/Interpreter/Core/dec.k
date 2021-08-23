@@ -10,12 +10,12 @@ module DEC
     // Constant
     context const _ : _ = (HOLE => reval(HOLE)) ;
     rule <k> const I : _ = E:Rv ; => . ...</k>
-         <env> Env => Env[I <- E] </env>
+         <localEnv> Env => Env[I <- E] </localEnv>
 
     // Variable
     context var _ : _ = (HOLE => reval(HOLE)) ;
     rule <k> var I : _ = E:Rv ; => . ...</k>
-         <env> Env => Env[I <- Loc(!N)] </env>
+         <localEnv> Env => Env[I <- Loc(!N)] </localEnv>
          <store> Store => Store[Loc(!N) <- E] </store>
 
     // Array
@@ -27,30 +27,30 @@ module DEC
     rule createArrayLocs(_, array(_, _, List => ListItem(Loc(!_N)) List), N => N -Int 1)
         requires N >Int 0
     rule <k> createArrayLocs(I, Array, 0) => . ...</k>
-         <env> Env => Env[I <- Array] </env>
+         <localEnv> Env => Env[I <- Array] </localEnv>
 
     // Record
     syntax KItem ::= createRecordLocs(Id, Record, Ids)
     rule record I ( ITs ) ; => createRecordLocs(I, record(.Map), IdTypeExps2Ids(ITs))   [structural]
     rule createRecordLocs(_, record(Map => Map[I <- Loc(!_N)]), (I , Is) => Is)
     rule <k> createRecordLocs(I, Record:Record, .Ids) => . ...</k>
-         <env> Env => Env[I <- Record] </env>
+         <localEnv> Env => Env[I <- Record] </localEnv>
 
     // Procedure
-    rule <k> proc I(ITs) C => . ...</k>
-         <env> Env => Env[I <- proc(IdTypeExps2Ids(ITs), env(Env), C)] </env>
+    rule <k> proc I(ITs) C => updateLocal(I, proc(IdTypeExps2Ids(ITs), env(Env), C)) ...</k>
+         <env> Env </env>
 
     // Recursive Procedure
-    rule <k> rec proc I(ITs) C => . ...</k>
-         <env> Env => Env[I <- recProc(I , IdTypeExps2Ids(ITs), env(Env), C)] </env>
+    rule <k> rec proc I(ITs) C => updateLocal(I, recProc(I , IdTypeExps2Ids(ITs), env(Env), C)) ...</k>
+         <env> Env </env>
 
     // Function
-    rule <k> func I(ITs) : _ { E } => . ...</k>
-         <env> Env => Env[I <- func(IdTypeExps2Ids(ITs), env(Env), E)] </env>
+    rule <k> func I(ITs) : _ { E } => updateLocal(I, func(IdTypeExps2Ids(ITs), env(Env), E)) ...</k>
+         <env> Env </env>
 
     // Recursive Function
-    rule <k> rec func I(ITs) : _ { E } => . ...</k>
-         <env> Env => Env[I <- recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)] </env>
+    rule <k> rec func I(ITs) : _ { E } => updateLocal(I, recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)) ...</k>
+         <env> Env </env>
 
     // Chain
     rule D1:Dec D2 => D1 ~> D2                                  [structural]
