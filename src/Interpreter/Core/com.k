@@ -30,7 +30,7 @@ module COM
     context HOLE ( _ ) ;
     context _:Ev ( HOLE ) ;                                     [result(Evs)]
     // Enter procedure
-    rule <k> proc(Is, Env', C) ( Es ) ; => Env' ~> updateLocals(Is, Es) ~> C ~> env(Env) ...</k>
+    rule <k> proc(Is, Env', C) ( Es ) ; => Env' ~> updateLocals(Is, Es) ~> C ~> env(<env> Env </env>) ...</k>
          <env> Env </env>
             requires isDvs(Es)
 
@@ -53,7 +53,7 @@ module COM
     syntax KItem ::= escs(Escs, K, Env)
                    | esc(Esc, K, Env)
     // Enter trap
-    rule <k> trap C Escs ~> Rest => escs(Escs, Rest, env(Env)) ~> C ~> env(Env) ~> Rest </k>
+    rule <k> trap C Escs ~> Rest => escs(Escs, Rest, env(<env> Env </env>)) ~> C ~> env(<env> Env </env>) ~> Rest </k>
          <env> Env </env>
     // Setup traps to be assigned last to first
     rule <k> escs((I : Cs Escs), K, Env) => escs(Escs, K, Env) ~> esc(I : Cs, K, Env) ...</k>   [structural]
@@ -73,11 +73,11 @@ module COM
 
     // With Do
     context with (HOLE => reval(HOLE)) do _
-    rule <k> with record(REnv) do C => updateLocal(REnv) ~> C ~> env(Env) ...</k>
+    rule <k> with record(REnv) do C => updateLocal(REnv) ~> C ~> env(<env> Env </env>) ...</k>
          <env> Env </env>
 
     // Block
-    rule <k> { D:Dec C:Com } => D ~> C ~> env(Env) ...</k>
+    rule <k> { D:Dec C:Com } => D ~> C ~> env(<env> Env </env>) ...</k>
          <env> Env </env>                                       [structural]
 
     // Chain

@@ -14,13 +14,13 @@ module ADDITIONAL-SYNTAX
     syntax Loc ::= Loc(Int)
 
     // Environments
-    syntax Env ::= env(KItem)
-                 | envE(KItem)
+    syntax Env ::= env(EnvCell)
+                 | envE(EnvCell)
                  | emptyLocal()
     // Restore environment
-    rule <k> env(Env) => . ...</k>
+    rule <k> env(<env> Env </env>) => . ...</k>
          <env> _ => Env </env>
-    rule <k> E:Ev ~> envE(Env) => E ...</k>
+    rule <k> E:Ev ~> envE(<env> Env </env>) => E ...</k>
          <env> _ => Env </env>
     // Set local environment to empty
     rule <k> emptyLocal() => . ...</k>

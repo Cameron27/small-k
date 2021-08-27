@@ -34,14 +34,14 @@ module EXP
     rule createRecordLocs(Record, .Ids) => Record
 
     // Valof
-    rule <k> valof : _ C ~> Rest => setReturn(ec(Rest, env(Env))) ~> C ~> "No return encountered" </k>
+    rule <k> valof : _ C ~> Rest => setReturn(ec(Rest, env(<env> Env </env>))) ~> C ~> "No return encountered" </k>
          <env> Env </env>
 
     // Function
     context HOLE:Acc ( _ )
     context _:Ev ( HOLE )                                       [result(Evs)]
     rule <k> func(Is, Env', E:Exp) ( Es )
-                => Env' ~> updateLocals(Is, Es) ~> E ~> envE(Env) ...</k>
+                => Env' ~> updateLocals(Is, Es) ~> E ~> envE(<env> Env </env>) ...</k>
          <env> Env </env>
             requires isDvs(Es)
 
@@ -51,7 +51,7 @@ module EXP
 
     // Dot
     context (HOLE => reval(HOLE)) . _
-    rule <k> record(REnv) . E => updateLocal(REnv) ~> E ~> envE(Env) ...</k>
+    rule <k> record(REnv) . E => updateLocal(REnv) ~> E ~> envE(<env> Env </env>) ...</k>
          <env> Env </env>
 
     // Array Access

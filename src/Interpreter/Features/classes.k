@@ -9,12 +9,12 @@ module CLASSES
 
     // Class
     rule <k> class I SCD => updateLocal(I, class(I, !_, SCD,
-            env(<env>-fragment
+            env(<env>
                 <localEnv> Env </localEnv>
                 <globalEnv> GEnv </globalEnv>
                 <return> no return </return>
                 <this> .Map </this>
-            </env>-fragment))) ...</k>
+            </env>))) ...</k>
          <env>
             <localEnv> Env </localEnv>
             <globalEnv> GEnv </globalEnv>
@@ -22,12 +22,12 @@ module CLASSES
             <this> _ </this>
          </env>
     rule <k> class I1 extends I2 SCD => updateLocal(I1, class(I1, !_, {Env[I2]}:>Class, SCD,
-            env(<env>-fragment
+            env(<env>
                 <localEnv> Env </localEnv>
                 <globalEnv> GEnv </globalEnv>
                 <return> no return </return>
                 <this> .Map </this>
-            </env>-fragment))) ...</k>
+            </env>))) ...</k>
          <env>
             <localEnv> Env </localEnv>
             <globalEnv> GEnv </globalEnv>
@@ -78,18 +78,18 @@ module CLASSES
          <store> Store => Store[Loc(!F) <- file(.List, 1, Loc(!B))] </store>
 
     // Procedure
-    rule <k> objDec(proc I(ITs) C) => obj(I |-> method(proc(IdTypeExps2Ids(ITs), env(Env), C))) ...</k>
+    rule <k> objDec(proc I(ITs) C) => obj(I |-> method(proc(IdTypeExps2Ids(ITs), env(<env> Env </env>), C))) ...</k>
          <env> Env </env>
 
     // Function
-    rule <k> objDec(func I(ITs) : _ { E }) => obj(I |-> method(func(IdTypeExps2Ids(ITs), env(Env), E))) ...</k>
+    rule <k> objDec(func I(ITs) : _ { E }) => obj(I |-> method(func(IdTypeExps2Ids(ITs), env(<env> Env </env>), E))) ...</k>
          <env> Env </env>
 
     // New
     context new HOLE
-    rule <k> new class(I, N, SCD, Env') => Env' ~> updateLocal(I, class(I, N, SCD, Env')) ~> obj(.Map) ~> SCD ~> envE(Env) ...</k>
+    rule <k> new class(I, N, SCD, Env') => Env' ~> updateLocal(I, class(I, N, SCD, Env')) ~> obj(.Map) ~> SCD ~> envE(<env> Env </env>) ...</k>
          <env> Env </env>
-    rule <k> new class(I, N, C, SCD, env(Env')) => new C ~> envE(Env') ~> updateLocalE(I, class(I, N, C, SCD, env(Env'))) ~> SCD ~> envE(Env) ...</k>
+    rule <k> new class(I, N, C, SCD, env(Env')) => new C ~> envE(Env') ~> updateLocalE(I, class(I, N, C, SCD, env(Env'))) ~> SCD ~> envE(<env> Env </env>) ...</k>
          <env> Env </env>
 
     // This
@@ -97,18 +97,18 @@ module CLASSES
          <this> This </this>
 
     // Dot
-    rule <k> obj(M) . E => updateLocal(M) ~> E ~> envEMethod(Env, obj(M)) ...</k>
+    rule <k> obj(M) . E => updateLocal(M) ~> E ~> envEMethod(<env> Env </env>, obj(M)) ...</k>
          <env> Env </env>
 
     // Method Procedure
-    rule <k> methodProc(Is, env(Env'), C, O) ( Es ) ; =>
-            updateLocals(Is, Es) ~> setThis(O) ~> C ~> env(Env) ...</k>
+    rule <k> methodProc(Is, env(<env> Env' </env>), C, O) ( Es ) ; =>
+            updateLocals(Is, Es) ~> setThis(O) ~> C ~> env(<env> Env </env>) ...</k>
          <env> Env => Env' </env>
             requires isDvs(Es)
 
     // Method Function
-    rule <k> methodFunc(Is, env(Env'), E, O) ( Es ) =>
-            updateLocals(Is, Es) ~> setThis(O) ~> E ~> envE(Env) ...</k>
+    rule <k> methodFunc(Is, env(<env> Env' </env>), E, O) ( Es ) =>
+            updateLocals(Is, Es) ~> setThis(O) ~> E ~> envE(<env> Env </env>) ...</k>
          <env> Env => Env' </env>
             requires isDvs(Es)
 
@@ -127,7 +127,7 @@ module CLASSES
     // Auxilary Functions
 
     // Restores the environment, keeping the denotable value in front and supplying this for methods
-    syntax KItem ::= envEMethod(KItem, Object)
+    syntax KItem ::= envEMethod(EnvCell, Object)
     rule method(proc(Is, Env', C)) ~> envEMethod(Env, O) => env(Env) ~> methodProc(Is, Env', C, O)
     rule method(func(Is, Env', E)) ~> envEMethod(Env, O) => env(Env) ~> methodFunc(Is, Env', E, O)
     rule E:Ev ~> envEMethod(Env, _) => env(Env) ~> E            [owise]

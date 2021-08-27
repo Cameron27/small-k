@@ -37,19 +37,19 @@ module DEC
          <localEnv> Env => Env[I <- Record] </localEnv>
 
     // Procedure
-    rule <k> proc I(ITs) C => updateLocal(I, proc(IdTypeExps2Ids(ITs), env(Env), C)) ...</k>
+    rule <k> proc I(ITs) C => updateLocal(I, proc(IdTypeExps2Ids(ITs), env(<env> Env </env>), C)) ...</k>
          <env> Env </env>
 
     // Recursive Procedure
-    rule <k> rec proc I(ITs) C => updateLocal(I, recProc(I , IdTypeExps2Ids(ITs), env(Env), C)) ...</k>
+    rule <k> rec proc I(ITs) C => updateLocal(I, recProc(I , IdTypeExps2Ids(ITs), env(<env> Env </env>), C)) ...</k>
          <env> Env </env>
 
     // Function
-    rule <k> func I(ITs) : _ { E } => updateLocal(I, func(IdTypeExps2Ids(ITs), env(Env), E)) ...</k>
+    rule <k> func I(ITs) : _ { E } => updateLocal(I, func(IdTypeExps2Ids(ITs), env(<env> Env </env>), E)) ...</k>
          <env> Env </env>
 
     // Recursive Function
-    rule <k> rec func I(ITs) : _ { E } => updateLocal(I, recFunc(I , IdTypeExps2Ids(ITs), env(Env), E)) ...</k>
+    rule <k> rec func I(ITs) : _ { E } => updateLocal(I, recFunc(I , IdTypeExps2Ids(ITs), env(<env> Env </env>), E)) ...</k>
          <env> Env </env>
 
     // Chain
